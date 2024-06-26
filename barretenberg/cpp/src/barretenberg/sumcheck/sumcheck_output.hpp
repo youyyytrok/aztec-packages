@@ -14,6 +14,8 @@ namespace bb {
 template <typename Flavor> struct SumcheckOutput {
     using FF = typename Flavor::FF;
     using ClaimedEvaluations = typename Flavor::AllValues;
+    // using ClaimedLibraEvaluations = typename std::vector<FF>;
+
     // \f$ \vec u = (u_0, ..., u_{d-1}) \f$
     std::vector<FF> challenge;
     // Evaluations in \f$ \vec u \f$ of the polynomials used in Sumcheck
@@ -21,5 +23,7 @@ template <typename Flavor> struct SumcheckOutput {
     // Whether or not the evaluations of multilinear polynomials \f$ P_1, \ldots, P_N \f$  and final Sumcheck evaluation
     // have been confirmed
     std::optional<bool> verified = false; // optional b/c this struct is shared by the Prover/Verifier
+
+    // std::optional<ClaimedLibraEvaluations> claimed_libra_evaluations;
 };
 } // namespace bb

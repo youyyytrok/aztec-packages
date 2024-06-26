@@ -15,6 +15,22 @@ namespace bb {
  * needed to construct the grand product polynomial Z_lookup(X): Note 1: In the above, 't' is associated with table
  * values (and is not to be confused with the quotient polynomial, also refered to as 't' elsewhere). Polynomial 's' is
  * the sorted  concatenation of the witnesses and the table values.
+
+ The relation is split into two sub-relations of different degrees
+
+ \f{align}{
+     Z_{\text{lookup}} \cdot (1 + \beta) \cdot
+     [
+     q_{\text{lookup}} \cdot
+     \left(
+        (w_1 + q_2 \cdot w_{1,\text{shift}}) + \eta\cdot (w_2 + q_m \cdot w_{2, \text{shift}}) + \eta^2\cdot (w_3 + q_c
+ \cdot w_{3,\text{shift}}) + \eta^3\cdot q_{\text{index}} \right)
+    + \gamma] \cdot (t_{\text{accum, k}} + \beta \cdot t_{\text{accum, k+1}} + \gamma (1 + \beta))
+ \f}
+ and
+ \f{align}{
+ Z_{\text{lookup, shift}} \cdot (s_{\text{accum, k}} + \beta \cdot s_{\text{accum, k+1}} + \gamma (1 + \beta))
+ \f} FINISH HERE
  *
  * @tparam FF parametrises the prime field class being used
  */
@@ -31,7 +47,16 @@ template <typename FF_> class LookupRelationImpl {
         4, // grand product construction sub-relation
         0  // left-shiftable polynomial sub-relation
     };
-
+    /**
+     * @brief Total degrees of sub-relations considered as polynomials in witnesses.
+     *
+     */
+    static constexpr std::array<size_t, 2> SUBRELATION_WITNESS_DEGREES{ 5, 1 };
+    /**
+     * @brief Sub-relation partial lengths used in ZK-Sumcheck
+     *
+     */
+    static constexpr std::array<size_t, 2> ZK_SUBRELATION_PARTIAL_LENGTHS{ 11, 4 };
     /**
      * @brief Returns true if the contribution from all subrelations for the provided inputs is identically zero
      *

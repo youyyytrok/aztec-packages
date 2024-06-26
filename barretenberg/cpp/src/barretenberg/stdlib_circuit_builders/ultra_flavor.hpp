@@ -22,6 +22,7 @@
 namespace bb {
 
 class UltraFlavor {
+
   public:
     using CircuitBuilder = UltraCircuitBuilder;
     using Curve = curve::BN254;
@@ -32,6 +33,8 @@ class UltraFlavor {
     using Polynomial = bb::Polynomial<FF>;
     using CommitmentKey = bb::CommitmentKey<Curve>;
     using VerifierCommitmentKey = bb::VerifierCommitmentKey<Curve>;
+
+    static constexpr bool HasZK = false;
 
     static constexpr size_t NUM_WIRES = CircuitBuilder::NUM_WIRES;
     // The number of multivariate polynomials on which a sumcheck prover sumcheck operates (including shifts). We often
@@ -63,12 +66,14 @@ class UltraFlavor {
     // For instances of this flavour, used in folding, we need a unique sumcheck batching challenge for each
     // subrelation. This is because using powers of alpha would increase the degree of Protogalaxy polynomial $G$ (the
     // combiner) too much.
+
     using RelationSeparator = std::array<FF, NUM_SUBRELATIONS - 1>;
 
     // BATCHED_RELATION_PARTIAL_LENGTH = algebraic degree of sumcheck relation *after* multiplying by the `pow_zeta`
     // random polynomial e.g. For \sum(x) [A(x) * B(x) + C(x)] * PowZeta(X), relation length = 2 and random relation
     // length = 3
     static constexpr size_t BATCHED_RELATION_PARTIAL_LENGTH = MAX_PARTIAL_RELATION_LENGTH + 1;
+
     static constexpr size_t BATCHED_RELATION_TOTAL_LENGTH = MAX_TOTAL_RELATION_LENGTH + 1;
     static constexpr size_t NUM_RELATIONS = std::tuple_size_v<Relations>;
 
@@ -80,7 +85,9 @@ class UltraFlavor {
         decltype(create_protogalaxy_tuple_of_tuples_of_univariates<Relations,
                                                                    NUM_INSTANCES,
                                                                    /*optimised=*/true>());
+
     using SumcheckTupleOfTuplesOfUnivariates = decltype(create_sumcheck_tuple_of_tuples_of_univariates<Relations>());
+
     using TupleOfArraysOfValues = decltype(create_tuple_of_arrays_of_values<Relations>());
 
     // Whether or not the first row of the execution trace is reserved for 0s to enable shifts
@@ -181,8 +188,8 @@ class UltraFlavor {
     /**
      * @brief A base class labelling all entities (for instance, all of the polynomials used by the prover during
      * sumcheck) in this Honk variant along with particular subsets of interest
-     * @details Used to build containers for: the prover's polynomial during sumcheck; the sumcheck's folded
-     * polynomials; the univariates consturcted during during sumcheck; the evaluations produced by sumcheck.
+     * @details Used to build containers for: the prover's polynomials during sumcheck;  the univariates constructed
+     * during during sumcheck; the evaluations produced by sumcheck.
      *
      * Symbolically we have: AllEntities = PrecomputedEntities + WitnessEntities + "ShiftedEntities". It could be
      * implemented as such, but we have this now.
@@ -273,6 +280,28 @@ class UltraFlavor {
             return RefArray{ table_1_shift, table_2_shift, table_3_shift,      table_4_shift, w_l_shift,     w_r_shift,
                              w_o_shift,     w_4_shift,     sorted_accum_shift, z_perm_shift,  z_lookup_shift };
         };
+        // getter for shifted tables, they are not pre-computed but do not reveal private information
+        auto get_shifted_tables() { return RefArray{ table_1_shift, table_2_shift, table_3_shift, table_4_shift }; };
+        // getter for ALL witnesses including shifted ones
+        auto get_all_witnesses()
+        {
+            return RefArray{ w_l,
+                             w_r,
+                             w_o,
+                             w_4,
+                             z_perm,
+                             w_l_shift,
+                             w_r_shift,
+                             w_o_shift,
+                             w_4_shift,
+                             sorted_accum,
+                             sorted_accum_shift,
+                             z_lookup,
+                             z_perm_shift,
+                             z_lookup_shift };
+        };
+        // getter for the complement of all witnesses inside all entities
+        auto get_non_witnesses() { return concatenate(get_precomputed(), get_shifted_tables()); }; // should be 29
     };
 
   public:
@@ -324,6 +353,7 @@ class UltraFlavor {
             }
         }
     };
+
     /**
      * @brief The proving key is responsible for storing the polynomials used by the prover.
      *
@@ -579,7 +609,7 @@ class UltraFlavor {
     /**
      * @brief A container for univariates produced during the hot loop in sumcheck.
      */
-    using ExtendedEdges = ProverUnivariates<MAX_PARTIAL_RELATION_LENGTH>;
+    using ExtendedEdges = ProverUnivariates<BATCHED_RELATION_PARTIAL_LENGTH>;
 
     /**
      * @brief A container for the witness commitments.

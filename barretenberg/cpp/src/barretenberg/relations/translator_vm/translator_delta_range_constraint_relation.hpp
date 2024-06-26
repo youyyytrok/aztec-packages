@@ -23,7 +23,40 @@ template <typename FF_> class GoblinTranslatorDeltaRangeConstraintRelationImpl {
         3  // ordered_range_constraints_4 ends with defined maximum value subrelation
 
     };
+    /**
+     * @brief Upper bound on total degrees of sub-relations considered as polynomials in witnesses.
+     *
+     */
+    static constexpr std::array<size_t, 10> SUBRELATION_WITNESS_DEGREES{
+        5, // ordered_range_constraints_0 step in {0,1,2,3} subrelation
+        5, // ordered_range_constraints_1 step in {0,1,2,3} subrelation
+        5, // ordered_range_constraints_2 step in {0,1,2,3} subrelation
+        5, // ordered_range_constraints_3 step in {0,1,2,3} subrelation
+        5, // ordered_range_constraints_4 step in {0,1,2,3} subrelation
+        2, // ordered_range_constraints_0 ends with defined maximum value subrelation
+        2, // ordered_range_constraints_1 ends with defined maximum value subrelation
+        2, // ordered_range_constraints_2 ends with defined maximum value subrelation
+        2, // ordered_range_constraints_3 ends with defined maximum value subrelation
+        2  // ordered_range_constraints_4 ends with defined maximum value subrelation
 
+    };
+    /**
+     * @brief Upper bound on sub-relation partial lengths used in ZK-Sumcheck
+     *
+     */
+    static constexpr std::array<size_t, 10> ZK_SUBRELATION_PARTIAL_LENGTHS{
+        11, // ordered_range_constraints_0 step in {0,1,2,3} subrelation
+        11, // ordered_range_constraints_1 step in {0,1,2,3} subrelation
+        11, // ordered_range_constraints_2 step in {0,1,2,3} subrelation
+        11, // ordered_range_constraints_3 step in {0,1,2,3} subrelation
+        11, // ordered_range_constraints_4 step in {0,1,2,3} subrelation
+        5,  // ordered_range_constraints_0 ends with defined maximum value subrelation
+        5,  // ordered_range_constraints_1 ends with defined maximum value subrelation
+        5,  // ordered_range_constraints_2 ends with defined maximum value subrelation
+        5,  // ordered_range_constraints_3 ends with defined maximum value subrelation
+        5   // ordered_range_constraints_4 ends with defined maximum value subrelation
+
+    };
     /**
      * @brief Expression for the generalized permutation sort relation
      *

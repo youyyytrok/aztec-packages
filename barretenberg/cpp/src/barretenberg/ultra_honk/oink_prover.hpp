@@ -17,14 +17,12 @@
 *                        L\              L\
 */
 // clang-format on
+#include "barretenberg/relations/relation_parameters.hpp"
+#include "barretenberg/transcript/transcript.hpp"
 #include <utility>
 
-#include "barretenberg/stdlib_circuit_builders/goblin_ultra_flavor.hpp"
-#include "barretenberg/stdlib_circuit_builders/ultra_flavor.hpp"
-#include "barretenberg/transcript/transcript.hpp"
-
 namespace bb {
-template <IsUltraFlavor Flavor> struct OinkProverOutput {
+template <typename Flavor> struct OinkProverOutput {
     typename Flavor::ProvingKey proving_key;
     bb::RelationParameters<typename Flavor::FF> relation_parameters;
     typename Flavor::RelationSeparator alphas;
@@ -38,7 +36,7 @@ template <IsUltraFlavor Flavor> struct OinkProverOutput {
  *
  * @tparam Flavor
  */
-template <IsUltraFlavor Flavor> class OinkProver {
+template <typename Flavor> class OinkProver {
     using CommitmentKey = typename Flavor::CommitmentKey;
     using ProvingKey = typename Flavor::ProvingKey;
     using Transcript = typename Flavor::Transcript;

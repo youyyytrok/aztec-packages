@@ -14,6 +14,26 @@ template <typename FF_> class Poseidon2InternalRelationImpl {
         7, // internal poseidon2 round sub-relation for third value
         7, // internal poseidon2 round sub-relation for fourth value
     };
+    /**
+     * @brief Upper bound on total degrees of sub-relations considered as polynomials in witnesses.
+     *
+     */
+    static constexpr std::array<size_t, 4> SUBRELATION_WITNESS_DEGREES{
+        6, // external poseidon2 round sub-relation for first value
+        6, // external poseidon2 round sub-relation for second value
+        6, // external poseidon2 round sub-relation for third value
+        6, // external poseidon2 round sub-relation for fourth value
+    };
+    /**
+     * @brief Upper bound on sub-relation partial lengths used in ZK-Sumcheck
+     *
+     */
+    static constexpr std::array<size_t, 4> ZK_SUBRELATION_PARTIAL_LENGTHS{
+        13, // external poseidon2 round sub-relation for first value
+        13, // external poseidon2 round sub-relation for second value
+        13, // external poseidon2 round sub-relation for third value
+        13, // external poseidon2 round sub-relation for fourth value
+    };
 
     /**
      * @brief Returns true if the contribution from all subrelations for the provided inputs is identically zero
