@@ -292,6 +292,28 @@ template <typename Tuple, std::size_t Index = 0> static constexpr size_t compute
         return subrelations_in_relation + compute_number_of_subrelations<Tuple, Index + 1>();
     }
 }
+
+/**
+ * @brief Takes a Tuple of objects in the Relation class and recursively computes the maximum witness degrees among all
+ * subrelations of given relations. In Ultra, it is 5.
+ *
+ * @details This method is needed for the computation of ZK_BATCHED_LENGTH that determines the number of evaluations of
+ * Round Univariates needed in zk-Sumcheck.
+ * @tparam Tuple
+ * @tparam Index
+ * @return constexpr size_t
+ */
+template <typename Tuple, std::size_t Index = 0> static constexpr size_t compute_max_witness_degree()
+{
+    if constexpr (Index >= std::tuple_size<Tuple>::value) {
+        return 0; // Return 0 when reach end of the tuple
+    } else {
+        constexpr size_t current_witness_degree = std::tuple_element<Index, Tuple>::type::TOTAL_RELATION_WITNESS_DEGREE;
+        constexpr size_t next_witness_degree = compute_max_witness_degree<Tuple, Index + 1>();
+        return (current_witness_degree > next_witness_degree) ? current_witness_degree : next_witness_degree;
+    }
+}
+
 /**
  * @brief Recursive utility function to construct a container for the subrelation accumulators of Protogalaxy folding.
  * @details The size of the outer tuple is equal to the number of relations. Each relation contributes an inner tuple of
@@ -335,6 +357,25 @@ template <typename Tuple, std::size_t Index = 0> static constexpr auto create_su
 }
 
 /**
+ * @brief Recursive utility function to construct a container for the subrelation accumulators of sumcheck proving.
+ * @details The size of the outer tuple is equal to the number of relations. Each relation contributes an inner tuple of
+ * univariates whose size is equal to the number of subrelations of the relation. The length of a univariate in an inner
+ * tuple is determined by the corresponding subrelation length.
+ */
+template <typename Tuple, std::size_t Index = 0>
+static constexpr auto create_zk_sumcheck_tuple_of_tuples_of_univariates()
+{
+    if constexpr (Index >= std::tuple_size<Tuple>::value) {
+        return std::tuple<>{}; // Return empty when reach end of the tuple
+    } else {
+        using UnivariateTuple =
+            typename std::tuple_element_t<Index, Tuple>::ZKSumcheckTupleOfUnivariatesOverSubrelations;
+        return std::tuple_cat(std::tuple<UnivariateTuple>{},
+                              create_zk_sumcheck_tuple_of_tuples_of_univariates<Tuple, Index + 1>());
+    }
+}
+
+/**
  * @brief Recursive utility function to construct tuple of arrays
  * @details Container for storing value of each identity in each relation. Each Relation contributes an array of
  * length num-identities.
@@ -349,11 +390,27 @@ template <typename Tuple, std::size_t Index = 0> static constexpr auto create_tu
     }
 }
 
+/**
+ * @brief Recursive utility function to construct tuple of arrays
+ * @details Container for storing value of each identity in each relation. Each Relation contributes an array of
+ * length num-identities.
+ */
+template <typename Tuple, std::size_t Index = 0> static constexpr auto create_zk_tuple_of_arrays_of_values()
+{
+    if constexpr (Index >= std::tuple_size<Tuple>::value) {
+        return std::tuple<>{}; // Return empty when reach end of the tuple
+    } else {
+        using Values = typename std::tuple_element_t<Index, Tuple>::ZKSumcheckArrayOfValuesOverSubrelations;
+        return std::tuple_cat(std::tuple<Values>{}, create_tuple_of_arrays_of_values<Tuple, Index + 1>());
+    }
+}
+
 } // namespace bb
 
 // Forward declare honk flavors
 namespace bb {
 class UltraFlavor;
+class UltraFlavorWithZK;
 class ECCVMFlavor;
 class MegaFlavor;
 class TranslatorFlavor;
@@ -386,13 +443,13 @@ template <typename T>
 concept IsUltraPlonkFlavor = IsAnyOf<T, plonk::flavor::Ultra>;
 
 template <typename T> 
-concept IsUltraPlonkOrHonk = IsAnyOf<T, plonk::flavor::Ultra, UltraFlavor, MegaFlavor>;
+concept IsUltraPlonkOrHonk = IsAnyOf<T, plonk::flavor::Ultra, UltraFlavor, UltraFlavorWithZK, MegaFlavor>;
 
 template <typename T> 
-concept IsHonkFlavor = IsAnyOf<T, UltraFlavor, MegaFlavor>;
+concept IsHonkFlavor = IsAnyOf<T, UltraFlavor, UltraFlavorWithZK, MegaFlavor>;
 
 template <typename T> 
-concept IsUltraFlavor = IsAnyOf<T, UltraFlavor, MegaFlavor>;
+concept IsUltraFlavor = IsAnyOf<T, UltraFlavor, UltraFlavorWithZK, MegaFlavor, UltraFlavorWithZK>;
 
 template <typename T> 
 concept IsGoblinFlavor = IsAnyOf<T, MegaFlavor,
@@ -417,6 +474,7 @@ template <typename T> concept IsECCVMRecursiveFlavor = IsAnyOf<T, ECCVMRecursive
 template <typename T> concept IsGrumpkinFlavor = IsAnyOf<T, ECCVMFlavor>;
 
 template <typename T> concept IsFoldingFlavor = IsAnyOf<T, UltraFlavor, 
+                        UltraFlavorWithZK,
                                                            MegaFlavor, 
                                                            UltraRecursiveFlavor_<UltraCircuitBuilder>, 
                                                            UltraRecursiveFlavor_<MegaCircuitBuilder>, 
@@ -424,7 +482,10 @@ template <typename T> concept IsFoldingFlavor = IsAnyOf<T, UltraFlavor,
                                                            MegaRecursiveFlavor_<UltraCircuitBuilder>, 
                                                            MegaRecursiveFlavor_<MegaCircuitBuilder>, MegaRecursiveFlavor_<CircuitSimulatorBN254>>;
 
+
+
 template <typename Container, typename Element>
+
 inline std::string flavor_get_label(Container&& container, const Element& element) {
     for (auto [label, data] : zip_view(container.get_labels(), container.get_all())) {
         if (&data == &element) {

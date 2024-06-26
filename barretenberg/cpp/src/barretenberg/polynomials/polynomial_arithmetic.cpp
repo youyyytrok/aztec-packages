@@ -1210,17 +1210,20 @@ template <typename Fr> Fr compute_sum(const Fr* src, const size_t n)
 // This function computes the polynomial (x - a)(x - b)(x - c)... given n distinct roots (a, b, c, ...).
 template <typename Fr> void compute_linear_polynomial_product(const Fr* roots, Fr* dest, const size_t n)
 {
+    for (size_t i = 0; i < n; ++i) {
+        info("roots check", dest[i]);
+    };
     auto scratch_space_ptr = get_scratch_space<Fr>(n);
     auto scratch_space = scratch_space_ptr.get();
     memcpy((void*)scratch_space, (void*)roots, n * sizeof(Fr));
 
-    dest[n] = 1;
+    dest[n] = Fr(1);
     dest[n - 1] = -compute_sum(scratch_space, n);
 
     Fr temp;
     Fr constant = 1;
     for (size_t i = 0; i < n - 1; ++i) {
-        temp = 0;
+        temp = Fr(0);
         for (size_t j = 0; j < n - 1 - i; ++j) {
             scratch_space[j] = roots[j] * compute_sum(&scratch_space[j + 1], n - 1 - i - j);
             temp += scratch_space[j];
@@ -1326,16 +1329,26 @@ void compute_efficient_interpolation(const Fr* src, Fr* dest, const Fr* evaluati
         For division of N(X) by (X - xi), we use the same trick that was used in compute_opening_polynomial()
         function in the kate commitment scheme.
     */
+    // Print all elements in src
+    for (size_t i = 0; i < n; ++i) {
+        // info("source check", src[i]);
+    };
     Fr numerator_polynomial[n + 1];
+    // Compute coefficients of N(X)
     polynomial_arithmetic::compute_linear_polynomial_product(evaluation_points, numerator_polynomial, n);
-
+    // for (auto numerator : numerator_polynomial) {
+    //     // info("numerator Lagrange ", numerator);
+    // };
+    // First half contains roots, second half contains denominators (to be inverted)
     Fr roots_and_denominators[2 * n];
     Fr temp_src[n];
     for (size_t i = 0; i < n; ++i) {
+        // place roots
         roots_and_denominators[i] = -evaluation_points[i];
+        // initialize tempt_src with given evaluations
         temp_src[i] = src[i];
+        info("temp src initialized ", temp_src[i]);
         dest[i] = 0;
-
         // compute constant denominator
         roots_and_denominators[n + i] = 1;
         for (size_t j = 0; j < n; ++j) {
@@ -1345,25 +1358,92 @@ void compute_efficient_interpolation(const Fr* src, Fr* dest, const Fr* evaluati
             roots_and_denominators[n + i] *= (evaluation_points[i] - evaluation_points[j]);
         }
     }
+    info("check that the 1 Lagrange constant is correct ", roots_and_denominators[n + 1]);
+    // auto check_var = -FF(6);
+    info("print coeff", Fr(1));
+    // at this point roots_and_denominators is populated as follows
+    // (x_0,\ldots, x_{n-1}, d_0, \ldots, d_{n-1})
 
     Fr::batch_invert(roots_and_denominators, 2 * n);
+    info("check that the 0-th Lagrange constant is correct ", roots_and_denominators[n]);
+    info("print coeff", Fr(1) / Fr(24));
+    info("zeroeth coeff", roots_and_denominators[0]);
 
     Fr z, multiplier;
     Fr temp_dest[n];
-    for (size_t i = 0; i < n; ++i) {
-        z = roots_and_denominators[i];
-        multiplier = temp_src[i] * roots_and_denominators[n + i];
-        temp_dest[0] = multiplier * numerator_polynomial[0];
-        temp_dest[0] *= z;
-        dest[0] += temp_dest[0];
-        for (size_t j = 1; j < n; ++j) {
-            temp_dest[j] = multiplier * numerator_polynomial[j] - temp_dest[j - 1];
-            temp_dest[j] *= z;
-            dest[j] += temp_dest[j];
+    size_t idx_zero;
+    bool interpolation_domain_contains_zero = false;
+    if (numerator_polynomial[0] == Fr(0)) {
+        for (size_t i = 0; i < n; ++i) {
+            if (evaluation_points[i] == Fr(0)) {
+                idx_zero = i;
+                interpolation_domain_contains_zero = true;
+            }
+        }
+    };
+    if (!interpolation_domain_contains_zero) {
+        for (size_t i = 0; i < n; ++i) {
+            // set z = - 1/x_i for x_i <> 0
+            z = roots_and_denominators[i];
+            info("z print initialized  ", z);
+            // temp_src[i] is y_i, it gets multiplied by 1/d_i
+            multiplier = temp_src[i] * roots_and_denominators[n + i];
+            temp_dest[0] = multiplier * numerator_polynomial[0];
+            info("multiplier ", multiplier);
+            temp_dest[0] *= z;
+            info("z print ", z);
+            dest[0] += temp_dest[0];
+            for (size_t j = 1; j < n; ++j) {
+                temp_dest[j] = multiplier * numerator_polynomial[j] - temp_dest[j - 1];
+                temp_dest[j] *= z;
+                dest[j] += temp_dest[j];
+            }
+        }
+    } else {
+        info("numerator coeff", numerator_polynomial[1]);
+        dest[0] = temp_src[idx_zero] * roots_and_denominators[n + idx_zero] * numerator_polynomial[1];
+        info("constant term ", dest[0]);
+        info("-50  ", Fr(-50));
+        info("second coeff of the product ", numerator_polynomial[2]);
+        // dest[1] = temp_src[idx_zero] * roots_and_denominators[n + idx_zero] * numerator_polynomial[2];
+        info("first coeff ", dest[1]);
+        info("result ", Fr(-50) / Fr(24));
+        for (size_t i = 1; i < n; ++i) {
+            if (i == idx_zero) {
+                continue;
+            } else {
+                // get the next inverted root
+                z = roots_and_denominators[i];
+                info("inverted root, must be -1 ", z);
+                info("lagrange coeff  ", roots_and_denominators[n + i]);
+                info("index ", i, " temp_src ", temp_src[i]);
+                // compute f(x_i) * d_{x_i}^{-1}
+                multiplier = temp_src[i] * roots_and_denominators[n + i];
+                // get x_i^{-1} * f(x_i) * d_{x_i}^{-1} into the "free" term
+                temp_dest[1] = multiplier * numerator_polynomial[1];
+                info("multiplier ", multiplier);
+                temp_dest[1] *= z;
+                info("temp_dest[1] ", temp_dest[1]);
+                // correct the first coefficient as its now accumulating free terms from
+                // f(x_i) d_i^{-1} prod_(X-x_i, x_i <> 0) (X-x_i) * 1/(X-x_i)
+                dest[1] += temp_dest[1];
+                info("dest[1] ", dest[1]);
+                for (size_t j = 2; j < n; ++j) {
+                    temp_dest[j] = multiplier * numerator_polynomial[j] - temp_dest[j - 1];
+                    temp_dest[j] *= z;
+                    dest[j] += temp_dest[j];
+                }
+            }
+        }
+        for (size_t i = 1; i < n; ++i) {
+            if (i == idx_zero) {
+                continue;
+            } else {
+                dest[i] += temp_src[idx_zero] * roots_and_denominators[n + idx_zero] * numerator_polynomial[i + 1];
+            }
         }
     }
 }
-
 template fr evaluate<fr>(const fr*, const fr&, const size_t);
 template fr evaluate<fr>(const std::vector<fr*>, const fr&, const size_t);
 template void copy_polynomial<fr>(const fr*, fr*, size_t, size_t);

@@ -21,6 +21,13 @@ template <typename FF_> class ECCVMBoolsRelationImpl {
         3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     };
 
+    static constexpr std::array<size_t, 19> SUBRELATION_WITNESS_DEGREES{
+        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    };
+
+    static constexpr std::array<size_t, 19> ZK_SUBRELATION_PARTIAL_LENGTHS{
+        5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    };
     template <typename ContainerOverSubrelations, typename AllEntities, typename Parameters>
     static void accumulate(ContainerOverSubrelations& accumulator,
                            const AllEntities& in,

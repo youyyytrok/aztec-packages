@@ -36,6 +36,8 @@ class MegaFlavor {
     using CommitmentKey = bb::CommitmentKey<Curve>;
     using VerifierCommitmentKey = bb::VerifierCommitmentKey<Curve>;
 
+    static constexpr bool HasZK = false;
+
     static constexpr size_t NUM_WIRES = CircuitBuilder::NUM_WIRES;
     // The number of multivariate polynomials on which a sumcheck prover sumcheck operates (including shifts). We often
     // need containers of this size to hold related data, so we choose a name more agnostic than `NUM_POLYNOMIALS`.
@@ -74,6 +76,8 @@ class MegaFlavor {
     static constexpr size_t BATCHED_RELATION_PARTIAL_LENGTH = MAX_PARTIAL_RELATION_LENGTH + 1;
     static constexpr size_t BATCHED_RELATION_TOTAL_LENGTH = MAX_TOTAL_RELATION_LENGTH + 1;
     static constexpr size_t NUM_RELATIONS = std::tuple_size_v<Relations>;
+
+    static constexpr size_t NUM_ALL_WITNESSES = 23;
 
     // For instances of this flavour, used in folding, we need a unique sumcheck batching challenges for each
     // subrelation. This
@@ -282,6 +286,74 @@ class MegaFlavor {
         };
         auto get_precomputed() { return PrecomputedEntities<DataType>::get_all(); }
         auto get_shifted() { return ShiftedEntities<DataType>::get_all(); };
+        auto get_all_witnesses()
+        {
+            return RefArray{
+                this->w_l,                     // column 0
+                this->w_r,                     // column 1
+                this->w_o,                     // column 2
+                this->w_4,                     // column 3
+                this->z_perm,                  // column 4
+                this->lookup_inverses,         // column 5
+                this->lookup_read_counts,      // column 6
+                this->lookup_read_tags,        // column 7
+                this->ecc_op_wire_1,           // column 8
+                this->ecc_op_wire_2,           // column 9
+                this->ecc_op_wire_3,           // column 10
+                this->ecc_op_wire_4,           // column 11
+                this->calldata,                // column 12
+                this->calldata_read_counts,    // column 13
+                this->calldata_inverses,       // column 14
+                this->return_data,             // column 15
+                this->return_data_read_counts, // column 16
+                this->return_data_inverses,    // column 17
+                this->w_l_shift,               // column 18
+                this->w_r_shift,               // column 19
+                this->w_o_shift,               // column 20
+                this->w_4_shift,               // column 21
+                this->z_perm_shift             // column 22
+            };
+        };
+
+        auto get_non_witnesses()
+        {
+            return RefArray{
+                this->q_m,                  // column 0
+                this->q_c,                  // column 1
+                this->q_l,                  // column 2
+                this->q_r,                  // column 3
+                this->q_o,                  // column 4
+                this->q_4,                  // column 5
+                this->q_arith,              // column 6
+                this->q_delta_range,        // column 7
+                this->q_elliptic,           // column 8
+                this->q_aux,                // column 9
+                this->q_lookup,             // column 10
+                this->q_busread,            // column 11
+                this->q_poseidon2_external, // column 12
+                this->q_poseidon2_internal, // column 13
+                this->sigma_1,              // column 14
+                this->sigma_2,              // column 15
+                this->sigma_3,              // column 16
+                this->sigma_4,              // column 17
+                this->id_1,                 // column 18
+                this->id_2,                 // column 19
+                this->id_3,                 // column 20
+                this->id_4,                 // column 21
+                this->table_1,              // column 22
+                this->table_2,              // column 23
+                this->table_3,              // column 24
+                this->table_4,              // column 25
+                this->lagrange_first,       // column 26
+                this->lagrange_last,        // column 27
+                this->lagrange_ecc_op,      // column 28, indicator poly for ecc op gates
+                this->databus_id,           // column 29, id polynomial, i.e. id_i = i
+                this->table_1,              // column 30
+                this->table_2,              // column 31
+                this->table_3,              // column 32
+                this->table_4,              // column 23
+            };
+        };
     };
 
     /**
@@ -416,6 +488,9 @@ class MegaFlavor {
                                                                              this->circuit_size,
                                                                              this->pub_inputs_offset);
             relation_parameters.public_input_delta = public_input_delta;
+            auto lookup_grand_product_delta = compute_lookup_grand_product_delta(
+                relation_parameters.beta, relation_parameters.gamma, this->circuit_size);
+            relation_parameters.lookup_grand_product_delta = lookup_grand_product_delta;
 
             // Compute permutation and lookup grand product polynomials
             compute_grand_products<MegaFlavor>(this->polynomials, relation_parameters);
@@ -557,6 +632,31 @@ class MegaFlavor {
                        lagrange_last,
                        lagrange_ecc_op,
                        databus_id);
+
+        /**
+         * @brief Serialize verification key to field elements
+         *
+         * @return std::vector<FF>
+         */
+        std::vector<FF> to_field_elements()
+        {
+            std::vector<FF> elements;
+            std::vector<FF> circuit_size_elements = bb::field_conversion::convert_to_bn254_frs(this->circuit_size);
+            elements.insert(elements.end(), circuit_size_elements.begin(), circuit_size_elements.end());
+            // do the same for the rest of the fields
+            std::vector<FF> num_public_inputs_elements =
+                bb::field_conversion::convert_to_bn254_frs(this->num_public_inputs);
+            elements.insert(elements.end(), num_public_inputs_elements.begin(), num_public_inputs_elements.end());
+            std::vector<FF> pub_inputs_offset_elements =
+                bb::field_conversion::convert_to_bn254_frs(this->pub_inputs_offset);
+            elements.insert(elements.end(), pub_inputs_offset_elements.begin(), pub_inputs_offset_elements.end());
+
+            for (Commitment& comm : this->get_all()) {
+                std::vector<FF> comm_elements = bb::field_conversion::convert_to_bn254_frs(comm);
+                elements.insert(elements.end(), comm_elements.begin(), comm_elements.end());
+            }
+            return elements;
+        }
     };
     /**
      * @brief A container for storing the partially evaluated multivariates produced by sumcheck.
@@ -591,7 +691,7 @@ class MegaFlavor {
     /**
      * @brief A container for univariates produced during the hot loop in sumcheck.
      */
-    using ExtendedEdges = ProverUnivariates<MAX_PARTIAL_RELATION_LENGTH>;
+    using ExtendedEdges = ProverUnivariates<BATCHED_RELATION_PARTIAL_LENGTH>;
 
     /**
      * @brief A container for the witness commitments.
@@ -786,6 +886,7 @@ class MegaFlavor {
             // take current proof and put them into the struct
             size_t num_frs_read = 0;
             circuit_size = deserialize_from_buffer<uint32_t>(proof_data, num_frs_read);
+            size_t log_n = numeric::get_msb(circuit_size);
 
             public_input_size = deserialize_from_buffer<uint32_t>(proof_data, num_frs_read);
             pub_inputs_offset = deserialize_from_buffer<uint32_t>(proof_data, num_frs_read);
@@ -810,13 +911,13 @@ class MegaFlavor {
             w_4_comm = deserialize_from_buffer<Commitment>(proof_data, num_frs_read);
             lookup_inverses_comm = deserialize_from_buffer<Commitment>(proof_data, num_frs_read);
             z_perm_comm = deserialize_from_buffer<Commitment>(proof_data, num_frs_read);
-            for (size_t i = 0; i < CONST_PROOF_SIZE_LOG_N; ++i) {
+            for (size_t i = 0; i < log_n; ++i) {
                 sumcheck_univariates.push_back(
                     deserialize_from_buffer<bb::Univariate<FF, BATCHED_RELATION_PARTIAL_LENGTH>>(proof_data,
                                                                                                  num_frs_read));
             }
             sumcheck_evaluations = deserialize_from_buffer<std::array<FF, NUM_ALL_ENTITIES>>(proof_data, num_frs_read);
-            for (size_t i = 0; i < CONST_PROOF_SIZE_LOG_N; ++i) {
+            for (size_t i = 0; i < log_n; ++i) {
                 zm_cq_comms.push_back(deserialize_from_buffer<Commitment>(proof_data, num_frs_read));
             }
             zm_cq_comm = deserialize_from_buffer<Commitment>(proof_data, num_frs_read);
@@ -827,6 +928,7 @@ class MegaFlavor {
         {
             size_t old_proof_length = proof_data.size();
             proof_data.clear();
+            size_t log_n = numeric::get_msb(circuit_size);
             serialize_to_buffer(circuit_size, proof_data);
             serialize_to_buffer(public_input_size, proof_data);
             serialize_to_buffer(pub_inputs_offset, proof_data);
@@ -851,11 +953,11 @@ class MegaFlavor {
             serialize_to_buffer(w_4_comm, proof_data);
             serialize_to_buffer(lookup_inverses_comm, proof_data);
             serialize_to_buffer(z_perm_comm, proof_data);
-            for (size_t i = 0; i < CONST_PROOF_SIZE_LOG_N; ++i) {
+            for (size_t i = 0; i < log_n; ++i) {
                 serialize_to_buffer(sumcheck_univariates[i], proof_data);
             }
             serialize_to_buffer(sumcheck_evaluations, proof_data);
-            for (size_t i = 0; i < CONST_PROOF_SIZE_LOG_N; ++i) {
+            for (size_t i = 0; i < log_n; ++i) {
                 serialize_to_buffer(zm_cq_comms[i], proof_data);
             }
             serialize_to_buffer(zm_cq_comm, proof_data);

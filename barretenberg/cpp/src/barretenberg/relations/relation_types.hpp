@@ -67,6 +67,17 @@ consteval std::array<size_t, RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size()> c
     }
 };
 
+template <typename RelationImpl>
+consteval std::array<size_t, RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size()> compute_zk_partial_subrelation_lengths()
+{
+    constexpr size_t NUM_SUBRELATIONS = RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size();
+    std::array<size_t, NUM_SUBRELATIONS> result;
+    for (size_t idx = 0; idx < NUM_SUBRELATIONS; idx++) {
+        result[idx] = RelationImpl::SUBRELATION_PARTIAL_LENGTHS[idx] + RelationImpl::SUBRELATION_WITNESS_DEGREES[idx];
+    }
+    return result;
+};
+
 /**
  * @brief Get the subrelation accumulators for the Protogalaxy combiner calculation.
  * @details A subrelation of degree D, when evaluated on polynomials of degree N, gives a polynomial of degree D
@@ -146,6 +157,11 @@ template <typename RelationImpl> class Relation : public RelationImpl {
     static constexpr size_t TOTAL_RELATION_LENGTH =
         *std::max_element(SUBRELATION_TOTAL_LENGTHS.begin(), SUBRELATION_TOTAL_LENGTHS.end());
 
+    // Compute the maximum witness degre of a given Relation
+
+    static constexpr size_t TOTAL_RELATION_WITNESS_DEGREE = *std::max_element(
+        RelationImpl::SUBRELATION_WITNESS_DEGREES.begin(), RelationImpl::SUBRELATION_WITNESS_DEGREES.end());
+
     template <size_t NUM_INSTANCES>
     using ProtogalaxyTupleOfUnivariatesOverSubrelations =
         TupleOfUnivariates<FF, compute_composed_subrelation_partial_lengths<NUM_INSTANCES>(SUBRELATION_TOTAL_LENGTHS)>;
@@ -157,7 +173,11 @@ template <typename RelationImpl> class Relation : public RelationImpl {
                                     NUM_INSTANCES - 1>;
     using SumcheckTupleOfUnivariatesOverSubrelations =
         TupleOfUnivariates<FF, RelationImpl::SUBRELATION_PARTIAL_LENGTHS>;
+    using ZKSumcheckTupleOfUnivariatesOverSubrelations =
+        TupleOfUnivariates<FF, RelationImpl::ZK_SUBRELATION_PARTIAL_LENGTHS>;
+
     using SumcheckArrayOfValuesOverSubrelations = ArrayOfValues<FF, RelationImpl::SUBRELATION_PARTIAL_LENGTHS>;
+    using ZKSumcheckArrayOfValuesOverSubrelations = ArrayOfValues<FF, RelationImpl::ZK_SUBRELATION_PARTIAL_LENGTHS>;
 
     // These are commonly needed, most importantly, for explicitly instantiating
     // compute_foo_numerator/denomintor.

@@ -75,5 +75,6 @@ template <IsUltraFlavor Flavor> HonkProof DeciderProver_<Flavor>::construct_proo
 
 template class DeciderProver_<UltraFlavor>;
 template class DeciderProver_<MegaFlavor>;
+template class DeciderProver_<UltraFlavorWithZK>;
 
 } // namespace bb

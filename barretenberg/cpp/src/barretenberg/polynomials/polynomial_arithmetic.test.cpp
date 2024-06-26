@@ -1000,6 +1000,28 @@ TYPED_TEST(PolynomialTests, compute_efficient_interpolation)
     }
 }
 
+TYPED_TEST(PolynomialTests, compute_efficient_interpolation_standard_domain)
+{
+    using FF = TypeParam;
+    constexpr size_t n = 15;
+    FF src[n], poly[n], x[n];
+
+    for (size_t i = 0; i < n; ++i) {
+        poly[i] = FF(i + 1);
+        info("test value ", poly[i]);
+    }
+
+    for (size_t i = 0; i < n; ++i) {
+        x[i] = FF(i);
+        src[i] = polynomial_arithmetic::evaluate(poly, x[i], n);
+    }
+    polynomial_arithmetic::compute_efficient_interpolation(src, src, x, n);
+
+    for (size_t i = 0; i < n; ++i) {
+        EXPECT_EQ(src[i], poly[i]);
+    }
+}
+
 TYPED_TEST(PolynomialTests, interpolation_constructor_single)
 {
     using FF = TypeParam;

@@ -22,6 +22,7 @@
 namespace bb {
 
 class UltraFlavor {
+
   public:
     using CircuitBuilder = UltraCircuitBuilder;
     using Curve = curve::BN254;
@@ -33,6 +34,8 @@ class UltraFlavor {
     using CommitmentKey = bb::CommitmentKey<Curve>;
     using VerifierCommitmentKey = bb::VerifierCommitmentKey<Curve>;
 
+    static constexpr bool HasZK = false;
+
     static constexpr size_t NUM_WIRES = CircuitBuilder::NUM_WIRES;
     // The number of multivariate polynomials on which a sumcheck prover sumcheck operates (including shifts). We often
     // need containers of this size to hold related data, so we choose a name more agnostic than `NUM_POLYNOMIALS`.
@@ -42,6 +45,7 @@ class UltraFlavor {
     static constexpr size_t NUM_PRECOMPUTED_ENTITIES = 25;
     // The total number of witness entities not including shifts.
     static constexpr size_t NUM_WITNESS_ENTITIES = 8;
+    static constexpr size_t NUM_ALL_WITNESSES = 13;
     // Total number of folded polynomials, which is just all polynomials except the shifts
     static constexpr size_t NUM_FOLDED_ENTITIES = NUM_PRECOMPUTED_ENTITIES + NUM_WITNESS_ENTITIES;
 
@@ -65,12 +69,14 @@ class UltraFlavor {
     // For instances of this flavour, used in folding, we need a unique sumcheck batching challenge for each
     // subrelation. This is because using powers of alpha would increase the degree of Protogalaxy polynomial $G$ (the
     // combiner) too much.
+
     using RelationSeparator = std::array<FF, NUM_SUBRELATIONS - 1>;
 
     // BATCHED_RELATION_PARTIAL_LENGTH = algebraic degree of sumcheck relation *after* multiplying by the `pow_zeta`
     // random polynomial e.g. For \sum(x) [A(x) * B(x) + C(x)] * PowZeta(X), relation length = 2 and random relation
     // length = 3
     static constexpr size_t BATCHED_RELATION_PARTIAL_LENGTH = MAX_PARTIAL_RELATION_LENGTH + 1;
+
     static constexpr size_t BATCHED_RELATION_TOTAL_LENGTH = MAX_TOTAL_RELATION_LENGTH + 1;
     static constexpr size_t NUM_RELATIONS = std::tuple_size_v<Relations>;
 
@@ -82,7 +88,9 @@ class UltraFlavor {
         decltype(create_protogalaxy_tuple_of_tuples_of_univariates<Relations,
                                                                    NUM_INSTANCES,
                                                                    /*optimised=*/true>());
+
     using SumcheckTupleOfTuplesOfUnivariates = decltype(create_sumcheck_tuple_of_tuples_of_univariates<Relations>());
+
     using TupleOfArraysOfValues = decltype(create_tuple_of_arrays_of_values<Relations>());
 
     // Whether or not the first row of the execution trace is reserved for 0s to enable shifts
@@ -183,8 +191,8 @@ class UltraFlavor {
     /**
      * @brief A base class labelling all entities (for instance, all of the polynomials used by the prover during
      * sumcheck) in this Honk variant along with particular subsets of interest
-     * @details Used to build containers for: the prover's polynomial during sumcheck; the sumcheck's folded
-     * polynomials; the univariates consturcted during during sumcheck; the evaluations produced by sumcheck.
+     * @details Used to build containers for: the prover's polynomials during sumcheck;  the univariates constructed
+     * during during sumcheck; the evaluations produced by sumcheck.
      *
      * Symbolically we have: AllEntities = PrecomputedEntities + WitnessEntities + "ShiftedEntities". It could be
      * implemented as such, but we have this now.
@@ -215,6 +223,33 @@ class UltraFlavor {
                              this->w_r,     this->w_o,     this->w_4,     this->z_perm };
         };
         auto get_shifted() { return ShiftedEntities<DataType>::get_all(); };
+        // getter for shifted tables
+        auto get_shifted_tables()
+        {
+            return RefArray{ this->table_1_shift, // column 0
+                             this->table_2_shift, // column 1
+                             this->table_3_shift, // column 2
+                             this->table_4_shift };
+        };
+        // getter for ALL witnesses including shifted ones
+        auto get_all_witnesses()
+        {
+            return RefArray{ this->w_l,
+                             this->w_r,
+                             this->w_o,
+                             this->w_4,
+                             this->z_perm,
+                             this->w_l_shift,
+                             this->w_r_shift,
+                             this->w_o_shift,
+                             this->w_4_shift,
+                             this->lookup_inverses,
+                             this->lookup_read_counts,
+                             this->lookup_read_tags,
+                             this->z_perm_shift };
+        };
+        // getter for the complement of all witnesses inside all entities
+        auto get_non_witnesses() { return concatenate(get_precomputed(), get_shifted_tables()); };
     };
 
   public:
@@ -267,6 +302,7 @@ class UltraFlavor {
             }
         }
     };
+
     /**
      * @brief The proving key is responsible for storing the polynomials used by the prover.
      *
@@ -344,6 +380,9 @@ class UltraFlavor {
                                                                               this->circuit_size,
                                                                               this->pub_inputs_offset);
             relation_parameters.public_input_delta = public_input_delta;
+            auto lookup_grand_product_delta = compute_lookup_grand_product_delta(
+                relation_parameters.beta, relation_parameters.gamma, this->circuit_size);
+            relation_parameters.lookup_grand_product_delta = lookup_grand_product_delta;
 
             // Compute permutation and lookup grand product polynomials
             compute_grand_products<UltraFlavor>(this->polynomials, relation_parameters);
@@ -358,6 +397,7 @@ class UltraFlavor {
      * that, and split out separate PrecomputedPolynomials/Commitments data for clarity but also for portability of our
      * circuits.
      */
+    // using VerificationKey = VerificationKey_<PrecomputedEntities<Commitment>, VerifierCommitmentKey>;
     class VerificationKey : public VerificationKey_<PrecomputedEntities<Commitment>, VerifierCommitmentKey> {
       public:
         VerificationKey() = default;
@@ -468,6 +508,31 @@ class UltraFlavor {
                        table_4,
                        lagrange_first,
                        lagrange_last);
+
+        /**
+         * @brief Serialize verification key to field elements
+         *
+         * @return std::vector<FF>
+         */
+        std::vector<FF> to_field_elements()
+        {
+            std::vector<FF> elements;
+            std::vector<FF> circuit_size_elements = bb::field_conversion::convert_to_bn254_frs(this->circuit_size);
+            elements.insert(elements.end(), circuit_size_elements.begin(), circuit_size_elements.end());
+            // do the same for the rest of the fields
+            std::vector<FF> num_public_inputs_elements =
+                bb::field_conversion::convert_to_bn254_frs(this->num_public_inputs);
+            elements.insert(elements.end(), num_public_inputs_elements.begin(), num_public_inputs_elements.end());
+            std::vector<FF> pub_inputs_offset_elements =
+                bb::field_conversion::convert_to_bn254_frs(this->pub_inputs_offset);
+            elements.insert(elements.end(), pub_inputs_offset_elements.begin(), pub_inputs_offset_elements.end());
+
+            for (Commitment& comm : this->get_all()) {
+                std::vector<FF> comm_elements = bb::field_conversion::convert_to_bn254_frs(comm);
+                elements.insert(elements.end(), comm_elements.begin(), comm_elements.end());
+            }
+            return elements;
+        }
     };
 
     /**
@@ -502,7 +567,7 @@ class UltraFlavor {
     /**
      * @brief A container for univariates produced during the hot loop in sumcheck.
      */
-    using ExtendedEdges = ProverUnivariates<MAX_PARTIAL_RELATION_LENGTH>;
+    using ExtendedEdges = ProverUnivariates<BATCHED_RELATION_PARTIAL_LENGTH>;
 
     /**
      * @brief A container for the witness commitments.
@@ -667,6 +732,7 @@ class UltraFlavor {
             // take current proof and put them into the struct
             size_t num_frs_read = 0;
             circuit_size = deserialize_from_buffer<uint32_t>(proof_data, num_frs_read);
+            size_t log_n = numeric::get_msb(circuit_size);
 
             public_input_size = deserialize_from_buffer<uint32_t>(proof_data, num_frs_read);
             pub_inputs_offset = deserialize_from_buffer<uint32_t>(proof_data, num_frs_read);
@@ -681,13 +747,13 @@ class UltraFlavor {
             w_4_comm = deserialize_from_buffer<Commitment>(proof_data, num_frs_read);
             lookup_inverses_comm = deserialize_from_buffer<Commitment>(proof_data, num_frs_read);
             z_perm_comm = deserialize_from_buffer<Commitment>(proof_data, num_frs_read);
-            for (size_t i = 0; i < CONST_PROOF_SIZE_LOG_N; ++i) {
+            for (size_t i = 0; i < log_n; ++i) {
                 sumcheck_univariates.push_back(
                     deserialize_from_buffer<bb::Univariate<FF, BATCHED_RELATION_PARTIAL_LENGTH>>(proof_data,
                                                                                                  num_frs_read));
             }
             sumcheck_evaluations = deserialize_from_buffer<std::array<FF, NUM_ALL_ENTITIES>>(proof_data, num_frs_read);
-            for (size_t i = 0; i < CONST_PROOF_SIZE_LOG_N; ++i) {
+            for (size_t i = 0; i < log_n; ++i) {
                 zm_cq_comms.push_back(deserialize_from_buffer<Commitment>(proof_data, num_frs_read));
             }
             zm_cq_comm = deserialize_from_buffer<Commitment>(proof_data, num_frs_read);
@@ -703,6 +769,7 @@ class UltraFlavor {
         {
             size_t old_proof_length = proof_data.size();
             proof_data.clear(); // clear proof_data so the rest of the function can replace it
+            size_t log_n = numeric::get_msb(circuit_size);
             serialize_to_buffer(circuit_size, proof_data);
             serialize_to_buffer(public_input_size, proof_data);
             serialize_to_buffer(pub_inputs_offset, proof_data);
@@ -717,11 +784,11 @@ class UltraFlavor {
             serialize_to_buffer(w_4_comm, proof_data);
             serialize_to_buffer(lookup_inverses_comm, proof_data);
             serialize_to_buffer(z_perm_comm, proof_data);
-            for (size_t i = 0; i < CONST_PROOF_SIZE_LOG_N; ++i) {
+            for (size_t i = 0; i < log_n; ++i) {
                 serialize_to_buffer(sumcheck_univariates[i], proof_data);
             }
             serialize_to_buffer(sumcheck_evaluations, proof_data);
-            for (size_t i = 0; i < CONST_PROOF_SIZE_LOG_N; ++i) {
+            for (size_t i = 0; i < log_n; ++i) {
                 serialize_to_buffer(zm_cq_comms[i], proof_data);
             }
             serialize_to_buffer(zm_cq_comm, proof_data);

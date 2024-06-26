@@ -57,6 +57,27 @@ template <typename FF_> class DatabusLookupRelationImpl {
         LENGTH  // log-derivative lookup argument subrelation
     };
 
+    /**
+     * @brief Upper bound on total degrees of sub-relations considered as polynomials in witnesses.
+     *
+     */
+    static constexpr std::array<size_t, NUM_BUS_COLUMNS * 2> SUBRELATION_WITNESS_DEGREES{
+        LENGTH - 1, // inverse polynomial correctness subrelation
+        LENGTH - 1, // log-derivative lookup argument subrelation
+        LENGTH - 1, // inverse polynomial correctness subrelation
+        LENGTH - 1  // log-derivative lookup argument subrelation
+    };
+    /**
+     * @brief Upper bound on sub-relation partial lengths used in ZK-Sumcheck
+     *
+     */
+    static constexpr std::array<size_t, NUM_BUS_COLUMNS * 2> ZK_SUBRELATION_PARTIAL_LENGTHS{
+        2 * LENGTH - 1, // inverse polynomial correctness subrelation
+        2 * LENGTH - 1, // log-derivative lookup argument subrelation
+        2 * LENGTH - 1, // inverse polynomial correctness subrelation
+        2 * LENGTH - 1  // log-derivative lookup argument subrelation
+    };
+
     // The lookup subrelations are "linearly dependent" in the sense that they establish the value of a sum across the
     // entire execution trace rather than a per-row identity.
     static constexpr std::array<bool, NUM_BUS_COLUMNS* 2> SUBRELATION_LINEARLY_INDEPENDENT = {

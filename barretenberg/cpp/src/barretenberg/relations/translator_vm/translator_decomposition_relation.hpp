@@ -61,6 +61,60 @@ template <typename FF_> class TranslatorDecompositionRelationImpl {
         3, // decomposition of z1 into 2 limbs subrelation
         3  // decomposition of z2 into 2 limbs subrelation
     };
+    /**
+     * @brief Upper bound on sub-relation partial lengths used in ZK-Sumcheck
+     *
+     */
+    static constexpr std::array<size_t, 48> ZK_SUBRELATION_PARTIAL_LENGTHS{
+        5, // decomposition of P.x limb 0 into microlimbs subrelation
+        5, // decomposition of P.x limb 1 into microlimbs subrelation
+        5, // decomposition of P.x limb 2 into microlimbs subrelation
+        5, // decomposition of P.x limb 3 into microlimbs subrelation
+        5, // decomposition of P.y limb 0 into microlimbs subrelation
+        5, // decomposition of P.y limb 1 into microlimbs subrelation
+        5, // decomposition of P.y limb 2 into microlimbs subrelation
+        5, // decomposition of P.y limb 3 into microlimbs subrelation
+        5, // decomposition of z1 limb 0 into microlimbs subrelation
+        5, // decomposition of z2 limb 0 into microlimbs subrelation
+        5, // decomposition of z1 limb 1 into microlimbs subrelation
+        5, // decomposition of z2 limb 1 into microlimbs subrelation
+        5, // decomposition of accumulator limb 0 into microlimbs subrelation
+        5, // decomposition of accumulator limb 1 into microlimbs subrelation
+        5, // decomposition of accumulator limb 2 into microlimbs subrelation
+        5, // decomposition of accumulator limb 3 into microlimbs subrelation
+        5, // decomposition of quotient limb 0 into microlimbs subrelation
+        5, // decomposition of quotient limb 1 into microlimbs subrelation
+        5, // decomposition of quotient limb 2 into microlimbs subrelation
+        5, // decomposition of quotient limb 3 into microlimbs subrelation
+        5, // decomposition of low relation wide limb into microlimbs subrelation
+        5, // decomposition of high relation wide limb into microlimbs subrelation
+        5, // stricter constraint on highest microlimb of P.x limb 0 subrelation
+        5, // stricter constraint on highest microlimb of P.x limb 1 subrelation
+        5, // stricter constraint on highest microlimb of P.x limb 2 subrelation
+        5, // stricter constraint on highest microlimb of P.x limb 3 subrelation
+        5, // stricter constraint on highest microlimb of P.y limb 0 subrelation
+        5, // stricter constraint on highest microlimb of P.y limb 1 subrelation
+        5, // stricter constraint on highest microlimb of P.y limb 2 subrelation
+        5, // stricter constraint on highest microlimb of P.y limb 3 subrelation
+        5, // stricter constraint on highest microlimb of z1 limb 0 subrelation
+        5, // stricter constraint on highest microlimb of z2 limb 0 subrelation
+        5, // stricter constraint on highest microlimb of z1 limb 1 subrelation
+        5, // stricter constraint on highest microlimb of z2 limb 1 subrelation
+        5, // stricter constraint on highest microlimb of accumulator limb 0 subrelation
+        5, // stricter constraint on highest microlimb of accumulator limb 1 subrelation
+        5, // stricter constraint on highest microlimb of accumulator limb 2 subrelation
+        5, // stricter constraint on highest microlimb of accumulator limb 3 subrelation
+        5, // stricter constraint on highest microlimb of quotient limb 0 subrelation
+        5, // stricter constraint on highest microlimb of quotient limb 1 subrelation
+        5, // stricter constraint on highest microlimb of quotient limb 2 subrelation
+        5, // stricter constraint on highest microlimb of quotient limb 3 subrelation
+        5, // decomposition of x_lo into 2 limbs subrelation
+        5, // decomposition of x_hi into 2 limbs subrelation
+        5, // decomposition of y_lo into 2 limbs subrelation
+        5, // decomposition of y_hi into 2 limbs subrelation
+        5, // decomposition of z1 into 2 limbs subrelation
+        5  // decomposition of z2 into 2 limbs subrelation
+    };
 
     /**
      * @brief Returns true if the contribution from all subrelations for the provided inputs is identically zero

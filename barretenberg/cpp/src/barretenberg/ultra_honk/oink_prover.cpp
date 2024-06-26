@@ -1,5 +1,8 @@
 #include "barretenberg/ultra_honk/oink_prover.hpp"
 #include "barretenberg/relations/logderiv_lookup_relation.hpp"
+#include "barretenberg/stdlib_circuit_builders/mega_flavor.hpp"
+#include "barretenberg/stdlib_circuit_builders/ultra_flavor.hpp"
+#include "barretenberg/stdlib_circuit_builders/ultra_zk_flavor.hpp"
 
 namespace bb {
 
@@ -9,7 +12,7 @@ namespace bb {
  * @tparam Flavor
  * @return OinkProverOutput<Flavor>
  */
-template <IsUltraFlavor Flavor> OinkProverOutput<Flavor> OinkProver<Flavor>::prove()
+template <typename Flavor> OinkProverOutput<Flavor> OinkProver<Flavor>::prove()
 {
     // Add circuit size public input size and public inputs to transcript->
     execute_preamble_round();
@@ -40,7 +43,7 @@ template <IsUltraFlavor Flavor> OinkProverOutput<Flavor> OinkProver<Flavor>::pro
  * @brief Add circuit size, public input size, and public inputs to transcript
  *
  */
-template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_preamble_round()
+template <typename Flavor> void OinkProver<Flavor>::execute_preamble_round()
 {
     const auto circuit_size = static_cast<uint32_t>(proving_key.circuit_size);
     const auto num_public_inputs = static_cast<uint32_t>(proving_key.num_public_inputs);
@@ -62,7 +65,7 @@ template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_preamble_round(
  * only commited to after adding memory records. In the Goblin Flavor, we also commit to the ECC OP wires and the
  * DataBus columns.
  */
-template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_wire_commitments_round()
+template <typename Flavor> void OinkProver<Flavor>::execute_wire_commitments_round()
 {
     // Commit to the first three wire polynomials of the instance
     // We only commit to the fourth wire polynomial after adding memory recordss
@@ -108,7 +111,7 @@ template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_wire_commitment
  * @brief Compute sorted witness-table accumulator and commit to the resulting polynomials.
  *
  */
-template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_sorted_list_accumulator_round()
+template <typename Flavor> void OinkProver<Flavor>::execute_sorted_list_accumulator_round()
 {
     // Get eta challenges
     auto [eta, eta_two, eta_three] = transcript->template get_challenges<FF>(
@@ -136,7 +139,7 @@ template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_sorted_list_acc
  * @brief Compute log derivative inverse polynomial and its commitment, if required
  *
  */
-template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_log_derivative_inverse_round()
+template <typename Flavor> void OinkProver<Flavor>::execute_log_derivative_inverse_round()
 {
     auto [beta, gamma] = transcript->template get_challenges<FF>(domain_separator + "beta", domain_separator + "gamma");
     relation_parameters.beta = beta;
@@ -164,7 +167,7 @@ template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_log_derivative_
  * @brief Compute permutation and lookup grand product polynomials and their commitments
  *
  */
-template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_grand_product_computation_round()
+template <typename Flavor> void OinkProver<Flavor>::execute_grand_product_computation_round()
 {
     proving_key.compute_grand_product_polynomials(relation_parameters);
 
@@ -173,7 +176,7 @@ template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_grand_product_c
     transcript->send_to_verifier(domain_separator + commitment_labels.z_perm, witness_commitments.z_perm);
 }
 
-template <IsUltraFlavor Flavor> typename Flavor::RelationSeparator OinkProver<Flavor>::generate_alphas_round()
+template <typename Flavor> typename Flavor::RelationSeparator OinkProver<Flavor>::generate_alphas_round()
 {
     RelationSeparator alphas;
     for (size_t idx = 0; idx < alphas.size(); idx++) {
@@ -181,7 +184,7 @@ template <IsUltraFlavor Flavor> typename Flavor::RelationSeparator OinkProver<Fl
     }
     return alphas;
 }
-
+template class OinkProver<UltraFlavor>;
 template class OinkProver<UltraFlavor>;
 template class OinkProver<MegaFlavor>;
 
