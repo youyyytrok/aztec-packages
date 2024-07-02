@@ -52,7 +52,7 @@ template <IsUltraFlavor Flavor_> class UltraProver_ {
   private:
     HonkProof proof;
 };
-
+// Maybe smth here?
 using UltraProver = UltraProver_<UltraFlavor>;
 using MegaProver = UltraProver_<MegaFlavor>;
 using UltraProverZK = UltraProver_<UltraFlavorWithZK>;

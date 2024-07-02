@@ -10,7 +10,6 @@
 #include "barretenberg/stdlib_circuit_builders/plookup_tables/fixed_base/fixed_base.hpp"
 #include "barretenberg/stdlib_circuit_builders/ultra_zk_flavor.hpp"
 #include "barretenberg/transcript/transcript.hpp"
-
 #include <gtest/gtest.h>
 
 using namespace bb;

@@ -75,6 +75,7 @@ template <typename Flavor> class SumcheckProverRound {
         using ClaimedLibraEvaluations = std::vector<FF>;
         using LibraUnivariates = std::vector<SumcheckRoundUnivariate>;
         using EvalMaskingArray = std::array<FF, NUM_ALL_WITNESSES>;
+        // using LibraCommitments = std::vector<Flavor::Commitment>;
 
         EvalMaskingArray eval_masking_array;
         EvaluationMaskingTable masking_terms_evaluations;

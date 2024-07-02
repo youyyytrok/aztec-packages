@@ -185,7 +185,7 @@ template <typename Flavor> typename Flavor::RelationSeparator OinkProver<Flavor>
     return alphas;
 }
 template class OinkProver<UltraFlavor>;
-template class OinkProver<UltraFlavor>;
+template class OinkProver<UltraFlavorWithZK>;
 template class OinkProver<MegaFlavor>;
 
 } // namespace bb

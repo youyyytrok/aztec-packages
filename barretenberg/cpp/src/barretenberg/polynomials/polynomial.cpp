@@ -100,6 +100,8 @@ Polynomial<Fr>::Polynomial(std::span<const Fr> interpolation_points, std::span<c
 
     polynomial_arithmetic::compute_efficient_interpolation(
         evaluations.data(), coefficients_, interpolation_points.data(), size_);
+    // info("inside interpolation ", evaluations.data(), " coeff ", coefficients_);
+    // info("eval data size", evaluations.data().size(), " coefficients size ", coefficients_.size());
 }
 
 // Assignments

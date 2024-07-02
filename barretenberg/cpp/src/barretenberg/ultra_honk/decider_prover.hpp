@@ -52,7 +52,7 @@ template <IsUltraFlavor Flavor> class DeciderProver_ {
   private:
     HonkProof proof;
 };
-
+/// WHY IS IT HERE?
 using UltraDeciderProver = DeciderProver_<UltraFlavor>;
 using MegaDeciderProver = DeciderProver_<MegaFlavor>;
 

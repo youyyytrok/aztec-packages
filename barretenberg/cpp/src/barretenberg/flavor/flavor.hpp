@@ -474,7 +474,7 @@ template <typename T> concept IsECCVMRecursiveFlavor = IsAnyOf<T, ECCVMRecursive
 template <typename T> concept IsGrumpkinFlavor = IsAnyOf<T, ECCVMFlavor>;
 
 template <typename T> concept IsFoldingFlavor = IsAnyOf<T, UltraFlavor, 
-                        UltraFlavorWithZK,
+                                                           UltraFlavorWithZK,
                                                            MegaFlavor, 
                                                            UltraRecursiveFlavor_<UltraCircuitBuilder>, 
                                                            UltraRecursiveFlavor_<MegaCircuitBuilder>, 
