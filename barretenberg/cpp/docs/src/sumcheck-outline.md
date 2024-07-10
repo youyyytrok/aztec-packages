@@ -219,6 +219,7 @@ Since \f$G\f$ is a polynomial of a very special form, the computation of \f$\gam
 \f}
 since the evaluations of \f$ g_i \f$ at \f$\vec \ell \in \{0,1\}^{d}\f$ depend only on \f$ \ell_i \f$, and therefore, there are \f$2^{d-1}\f$ summands \f$ g_i(0) \f$ corresponding to the points \f$\vec \ell\f$ with \f$\ell_i=0\f$ and \f$2^{d-1}\f$ summands \f$ g_i(1) \f$ corresponding to \f$\vec \ell\f$ with \f$\ell_i=1\f$.
 
+<<<<<<< HEAD
 The prover computes
 \f{align}{
 \texttt{libra*total_sum} \gets 2^{d-1} \sum*{i = 0}^{d-1} \left( g_i(0) + g_i(1) \right).
@@ -232,6 +233,24 @@ As in [Sumcheck Book-keeping](#BookKeepingTable), we use a table of evaluations 
 Namely, before entering the first round, the prover needs a vector of univariates
 \f{align}{
 \texttt{libra*univariates}*{j}(k) \gets \rho \cdot 2^{d-1} \cdot g*{j}(k) \text{ for } j= i,\ldots, d-1, \text{ and } k=0,\ldots, \tilde{D}
+=======
+The prover computes 
+\f{align}{
+	\texttt{libra_total_sum} \gets 2^{d-1} \sum_{i = 0}^{d-1} \left( g_i(0) + g_i(1) \right).
+\f}
+using method \ref bb::SumcheckProver< Flavor >::compute_libra_total_sum "compute_libra_total_sum" 
+and adds this value to the transcript.
+
+### Pre-computed Data and Book-Keeping {#LibraBookKeeping}
+As in [Sumcheck Book-keeping](#BookKeepingTable), we use a table of evaluations of Libra univariates that is being updated in each round, in this case it is designed to optimize memory use.
+Namely, before entering the first round, the prover needs a vector of univariates
+\f{align}{
+	\texttt{libra_univariates}_{j}(k) \gets \rho \cdot 2^{d-1} \cdot g_{j}(k) \text{ for } j= i,\ldots, d-1, \text{ and } k=0,\ldots, \tilde{D}
+\f} 
+and the term 
+\f{align}{
+	\texttt{libra_running_sum} \gets 2^{-1} \left( \rho \cdot \texttt{libra_total_sum} - (\texttt{libra_univariates}_{0}(0) + \texttt{libra_univariates}_{0}(1)) \right).
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
 \f}
 and the term
 \f{align}{
@@ -242,21 +261,35 @@ These entities are created inside \ref bb::SumcheckProver< Flavor >::setup_zk_su
 
 At the end of the sumcheck, \f$ \texttt{libra_univariates} \f$ contains the univariates \f$ g_i \cdot \texttt{libra_challenge}\f$.
 
+These entities are created inside \ref bb::SumcheckProver< Flavor >::setup_zk_sumcheck_data "setup_zk_sumcheck_data".
+
+At the end of the sumcheck, \f$ \texttt{libra_univariates} \f$ contains the univariates \f$ g_i \cdot \texttt{libra_challenge}\f$.
+
 ### First Round {#LibraFirstRound}
 
 The prover computes first Libra round univariate
 \f{align}{
+<<<<<<< HEAD
 \texttt{libra*round_univariate}\_0(X_0) = \rho \cdot \sum*{\vec \ell \in \{0,1\}^{d-1}} G(X*0,\vec \ell) =
 2^{d-1} \rho\cdot g_0(X_0) + 2^{d-2} \rho \cdot \sum*{i=1}^{d-1}\left(g*i(0)+g_i(1)\right)
 \f}
 which could be expressed as follows
 \f{align}{
 \texttt{libra_round_univariate}\_0 (k) \gets \texttt{libra_univariates}*{0}(k) + \texttt{libra_running_sum}
+=======
+	\texttt{libra_round_univariate}_0(X_0) = \rho \cdot  \sum_{\vec \ell \in \{0,1\}^{d-1}} G(X_0,\vec \ell) =
+	 2^{d-1} \rho\cdot g_0(X_0) + 2^{d-2} \rho \cdot \sum_{i=1}^{d-1}\left(g_i(0)+g_i(1)\right)
+\f}
+which could be expressed as follows
+\f{align}{
+	\texttt{libra_round_univariate}_0 (k) \gets  \texttt{libra_univariates}_{0}(k) + \texttt{libra_running_sum}
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
 \f}
 for \f$k=0,\ldots, \tilde{D}\f$.
 
 When the prover receives the challenge \f$u_0\f$, it performs the following actions
 
+<<<<<<< HEAD
 - updates the table of Libra univariates by multiplying every term by \f$1/2\f$.
 - computes the value \f$2^{d-1} \cdot \rho \cdot g_0(u_0)\f$ applying \ref bb::Univariate::evaluate "evaluate" method to the first univariate in the table \f$\texttt{libra_univariates}\f$
 - places the value \f$ g_0(u_0)\f$ to the vector \f$ \texttt{libra_evaluations}\f$
@@ -264,6 +297,15 @@ When the prover receives the challenge \f$u_0\f$, it performs the following acti
   \f{align}{
   \texttt{libra*running_sum} \gets 2^{-1} \cdot \left( (g_0(u_0) + \texttt{libra_running_sum}) - (\texttt{libra_univariates}*{1}(0) + \texttt{libra*univariates}*{1}(1)) \right)
   \f}
+=======
+-  updates the table of Libra univariates by multiplying every term by \f$1/2\f$.
+-  computes the value \f$2^{d-1} \cdot \rho \cdot g_0(u_0)\f$ applying \ref bb::Univariate::evaluate "evaluate" method to the first univariate in the table \f$\texttt{libra_univariates}\f$ 
+- places the value \f$ g_0(u_0)\f$ to the vector \f$ \texttt{libra_evaluations}\f$
+- updates the running sum  
+\f{align}{
+	\texttt{libra_running_sum} \gets 2^{-1} \cdot \left( (g_0(u_0) + \texttt{libra_running_sum}) - (\texttt{libra_univariates}_{1}(0) + \texttt{libra_univariates}_{1}(1)) \right)
+\f}
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
 -
 
 ### Round Univariates in Subsequent Rounds {#LibraRoundUnivariates}
@@ -273,9 +315,15 @@ Similarly, to compute the contribution of Libra masking polynomial \f$G\f$ to th
 \texttt{libra*univariate}\_i(X_i) = \rho \cdot \sum*{\vec \ell \in \{0,1\}^{d-1 - i}} G(u*0,\ldots, u*{i-1}, X*{i}, \vec \ell) =
 \rho \cdot 2^{d-1 - i} \left( \sum*{j = 0}^{i-1} g*j(u*{j}) + g*{i}(X_i) + \sum*{j=i+1}^{d-1} \left(g*{j,0} + g*{j,1}\right) \right)
 \f}  
+<<<<<<< HEAD
 Therefore, the contribution of the \f$\texttt{libra_round_univariate}_{i}(X_{i})\f$ at \f$X_{i} = k\f$ to \f$\tilde{S}^i(k)\f$, where \f$k=0,\ldots, \tilde{D}\f$, is given by the formula
 \f{align}{
 \texttt{libra*round_univariate}\_i(k) = \rho \cdot 2^{d-1-i} \left(\sum*{j = 0}^{i-1} g*j (u*{j}) + g*{i,k}+ \sum*{j=i+1}^{d-1}\left(g*{j,0}+g*{j,1}\right)\right) = \texttt{libra*univariates}*{i}(k) + \texttt{libra_running_sum}.
+=======
+Therefore, the contribution of the \f$\texttt{libra_round_univariate}_{i}(X_{i})\f$ at \f$X_{i} = k\f$ to \f$\tilde{S}^i(k)\f$, where \f$k=0,\ldots, \tilde{D}\f$, is given by the formula 
+\f{align}{
+	\texttt{libra_round_univariate}_i(k) = \rho \cdot 2^{d-1-i} \left(\sum_{j = 0}^{i-1} g_j (u_{j}) + g_{i,k}+ \sum_{j=i+1}^{d-1}\left(g_{j,0}+g_{j,1}\right)\right) =  \texttt{libra_univariates}_{i}(k) + \texttt{libra_running_sum}.
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
 \f}
 
 ### Updating Partial Evaluations {#LibraUpdatePartialEvaluations}

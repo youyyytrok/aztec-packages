@@ -449,7 +449,11 @@ template <typename T>
 concept IsHonkFlavor = IsAnyOf<T, UltraFlavor, UltraFlavorWithZK, MegaFlavor>;
 
 template <typename T> 
+<<<<<<< HEAD
 concept IsUltraFlavor = IsAnyOf<T, UltraFlavor, UltraFlavorWithZK, MegaFlavor, UltraFlavorWithZK>;
+=======
+concept IsUltraFlavor = IsAnyOf<T, UltraFlavor, GoblinUltraFlavor, UltraFlavorWithZK>;
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
 
 template <typename T> 
 concept IsGoblinFlavor = IsAnyOf<T, MegaFlavor,
@@ -474,8 +478,13 @@ template <typename T> concept IsECCVMRecursiveFlavor = IsAnyOf<T, ECCVMRecursive
 template <typename T> concept IsGrumpkinFlavor = IsAnyOf<T, ECCVMFlavor>;
 
 template <typename T> concept IsFoldingFlavor = IsAnyOf<T, UltraFlavor, 
+<<<<<<< HEAD
                                                            UltraFlavorWithZK,
                                                            MegaFlavor, 
+=======
+                                                           UltraFlavorWithZK, 
+                                                           GoblinUltraFlavor, 
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
                                                            UltraRecursiveFlavor_<UltraCircuitBuilder>, 
                                                            UltraRecursiveFlavor_<MegaCircuitBuilder>, 
                                                            UltraRecursiveFlavor_<CircuitSimulatorBN254>,
@@ -483,6 +492,9 @@ template <typename T> concept IsFoldingFlavor = IsAnyOf<T, UltraFlavor,
                                                            MegaRecursiveFlavor_<MegaCircuitBuilder>, MegaRecursiveFlavor_<CircuitSimulatorBN254>>;
 
 
+
+
+// template <typename T> concept IsZKFlavor = IsAnyOf<T, UltraFlavorWithZK>;
 
 template <typename Container, typename Element>
 

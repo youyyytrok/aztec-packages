@@ -128,12 +128,19 @@ template <typename Flavor> class SumcheckProver {
     using RelationSeparator = typename Flavor::RelationSeparator;
     using Polynomial = bb::Polynomial<FF>;
     using ZKSumcheckSetupData = SumcheckProverRound<Flavor>::ZKSumcheckSetupData;
+<<<<<<< HEAD
     using LibraCommitments = std::vector<typename Flavor::Commitment>;
+=======
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
 
     // this constant specifies the number of coefficients of libra polynomials, and evaluations of round univariate
     static constexpr size_t BATCHED_RELATION_PARTIAL_LENGTH = Flavor::BATCHED_RELATION_PARTIAL_LENGTH;
     // Specify the number of witnesses and their shifts in the flavor
+<<<<<<< HEAD
     static constexpr size_t NUM_ALL_WITNESSES = Flavor::NUM_ALL_WITNESSES;
+=======
+    static constexpr size_t NUM_ALL_WITNESSES = Flavor::NUM_WITNESS_ENTITIES * 2;
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
     /**
      * @brief The size of the hypercube, i.e. \f$ 2^d\f$.
      *
@@ -261,6 +268,7 @@ template <typename Flavor> class SumcheckProver {
         // abort and start ZK-Sumcheck anew.
         if (Flavor::HasZK) {
             check_that_evals_do_not_leak_witness_data(multivariate_challenge);
+<<<<<<< HEAD
         }
         // The evaluations of Libra uninvariates at \f$ g_0(u_0), \ldots, g_{d-1} (u_{d-1}) \f$ are sent to the
         // Verifier.
@@ -283,6 +291,18 @@ template <typename Flavor> class SumcheckProver {
         } else {
             extract_claimed_evaluations(partially_evaluated_polynomials, multivariate_evaluations);
         };
+=======
+        }
+        // The evaluations of Libra uninvariates at \f$ g_0(u_0), \ldots, g_{d-1} (u_{d-1}) \f$ are sent to the
+        // Verifier.
+        if constexpr (Flavor::HasZK) {
+            transcript->send_to_verifier("Libra:evaluations", zk_sumcheck_data.libra_evaluations);
+        };
+        // Claimed evaluations of Prover polynomials are extracted and sent to the verifier. When Flavor has ZK, the
+        // evaluations of all witnesses are masked.
+        ClaimedEvaluations multivariate_evaluations =
+            extract_claimed_evaluations(partially_evaluated_polynomials, zk_sumcheck_data.masking_terms_evaluations);
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
         transcript->send_to_verifier("Sumcheck:evaluations", multivariate_evaluations.get_all());
         return SumcheckOutput<Flavor>{
             multivariate_challenge, multivariate_evaluations
@@ -351,6 +371,7 @@ template <typename Flavor> class SumcheckProver {
         });
     };
 
+<<<<<<< HEAD
     void extract_claimed_evaluations(PartiallyEvaluatedMultivariates partially_evaluated_polynomials,
                                      ClaimedEvaluations& multivariate_evaluations)
     {
@@ -365,10 +386,19 @@ template <typename Flavor> class SumcheckProver {
                                         ClaimedEvaluations& multivariate_evaluations)
     {
         // Extract claimed evaluations of non-witness polynomials
+=======
+    static ClaimedEvaluations extract_claimed_evaluations(
+        PartiallyEvaluatedMultivariates partially_evaluated_polynomials,
+        std::optional<EvaluationMaskingTable> masking_terms_evaluations = std::nullopt)
+    {
+        // Extract claimed evaluations of non-witness polynomials
+        ClaimedEvaluations multivariate_evaluations;
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
         for (auto [eval, poly] : zip_view(multivariate_evaluations.get_non_witnesses(),
                                           partially_evaluated_polynomials.get_non_witnesses())) {
             eval = poly[0];
         };
+<<<<<<< HEAD
         // Extract claimed evaluations of all witness polynomials
         for (auto [eval, poly, masking_term] : zip_view(multivariate_evaluations.get_all_witnesses(),
                                                         partially_evaluated_polynomials.get_all_witnesses(),
@@ -377,6 +407,24 @@ template <typename Flavor> class SumcheckProver {
         }
     };
 
+=======
+        // Final round: Extract evaluations of witness polynomials: In the ZK case, add extra masking term to the
+        // witnesses.
+        if (Flavor::HasZK) {
+            for (auto [eval, poly, masking_term] : zip_view(multivariate_evaluations.get_all_witnesses(),
+                                                            partially_evaluated_polynomials.get_all_witnesses(),
+                                                            masking_terms_evaluations.value())) {
+                eval = poly[0] + masking_term.value_at(0);
+            }
+        } else {
+            for (auto [eval, poly] : zip_view(multivariate_evaluations.get_all_witnesses(),
+                                              partially_evaluated_polynomials.get_all_witnesses())) {
+                eval = poly[0];
+            };
+        }
+        return multivariate_evaluations;
+    };
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
     /**
      * @brief Create and populate the structure required for the ZK-sumcheck.
 
@@ -401,10 +449,15 @@ D\f$. The prover commits to each \f$ \rho_j \f$ as a multilinear polynomial in \
         // populate the table masking_terms_evaluations with the terms \f$ \rho_j \cdot (1-k) \cdot k \f$
         auto masking_terms_evaluations = create_evaluation_masking_table(eval_masking_array);
         //  Generate random Libra Polynomials to mask Round Univariates.
+<<<<<<< HEAD
         LibraUnivariates libra_univariates = generate_libra_univariates(multivariate_d);
         // have to compute monomial coefficients of Libra univariates here
         create_and_commit_to_libra_polynomials(libra_univariates);
 
+=======
+        LibraUnivariates libra_univariates = generate_libra_polynomials(multivariate_d);
+        // have to commit to libra_univariates here
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
         auto libra_scaling_factor = FF(1);
         FF libra_total_sum = compute_libra_total_sum(libra_univariates, libra_scaling_factor);
         transcript->send_to_verifier("Libra:Sum", libra_total_sum); // take care of this in ultra transcript!
@@ -437,7 +490,11 @@ D\f$. The prover commits to each \f$ \rho_j \f$ as a multilinear polynomial in \
      * @param num_evaluations
      * @return std::vector<Polynomial>
      */
+<<<<<<< HEAD
     static LibraUnivariates generate_libra_univariates(size_t number_of_polynomials)
+=======
+    static LibraUnivariates generate_libra_polynomials(size_t number_of_polynomials)
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
     {
         LibraUnivariates libra_full_polynomials;
         for (size_t k = 0; k < number_of_polynomials; ++k) {
@@ -539,6 +596,7 @@ D\f$. The prover commits to each \f$ \rho_j \f$ as a multilinear polynomial in \
         libra_running_sum *= FF(1) / FF(2);
     }
 
+<<<<<<< HEAD
     bool create_and_commit_to_libra_polynomials(LibraUnivariates libra_univariates)
     {
         size_t number_of_polys = libra_univariates.size();
@@ -575,6 +633,8 @@ D\f$. The prover commits to each \f$ \rho_j \f$ as a multilinear polynomial in \
         return true;
     }
 
+=======
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
     /**
      * @brief Update Libra data consisting of Libra polynomials, Libra running sum, and Libra claimed evaluations after
      * obtaining Sumcheck 'round_challenge'.

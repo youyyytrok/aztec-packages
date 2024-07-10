@@ -257,6 +257,7 @@ template <typename Flavor> class SumcheckTests : public ::testing::Test {
         for (size_t idx = 0; idx < multivariate_d; idx++) {
             verifier_gate_challenges[idx] =
                 verifier_transcript->template get_challenge<FF>("Sumcheck:gate_challenge_" + std::to_string(idx));
+            info("verifier gate challenge: ", verifier_gate_challenges[idx]);
         }
         auto verifier_output = sumcheck_verifier.verify(relation_parameters, verifier_alpha, verifier_gate_challenges);
 
@@ -338,6 +339,10 @@ template <typename Flavor> class SumcheckTests : public ::testing::Test {
         for (size_t idx = 0; idx < multivariate_d; idx++) {
             verifier_gate_challenges[idx] =
                 verifier_transcript->template get_challenge<FF>("Sumcheck:gate_challenge_" + std::to_string(idx));
+<<<<<<< HEAD
+=======
+            info("verifier gate challenge: ", verifier_gate_challenges[idx]);
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
         }
         auto verifier_output = sumcheck_verifier.verify(relation_parameters, verifier_alpha, verifier_gate_challenges);
 
@@ -358,7 +363,10 @@ template <typename Flavor> class SumcheckTests : public ::testing::Test {
 
 // Define the FlavorTypes
 using FlavorTypes = testing::Types<UltraFlavor, UltraFlavorWithZK>;
+<<<<<<< HEAD
 //   , UltraFlavorWithZK>;
+=======
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
 
 TYPED_TEST_SUITE(SumcheckTests, FlavorTypes);
 // Test the verifier
@@ -383,7 +391,10 @@ using UltraFlavorSumcheckTests = SumcheckTests<UltraFlavor>;
 TEST_F(UltraFlavorSumcheckTests, PolynomialNormalization)
 {
     test_polynomial_normalization();
+<<<<<<< HEAD
     // here something
+=======
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
 }
 // UltraFlavorWithZK-specific tests
 using UltraFlavorWithZKSumcheckTests = SumcheckTests<UltraFlavorWithZK>;
