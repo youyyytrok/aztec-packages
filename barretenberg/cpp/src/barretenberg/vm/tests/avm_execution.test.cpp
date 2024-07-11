@@ -100,7 +100,7 @@ TEST_F(AvmExecutionTests, basicAddReturn)
                             ElementsAre(VariantWith<uint8_t>(0), VariantWith<uint32_t>(0), VariantWith<uint32_t>(0)))));
 
     auto trace = gen_trace_from_instr(instructions);
-    validate_trace(std::move(trace), public_inputs, {}, true);
+    validate_trace(std::move(trace), public_inputs, {}, {}, true);
 }
 
 // Positive test for SET and SUB opcodes
@@ -165,7 +165,7 @@ TEST_F(AvmExecutionTests, setAndSubOpcodes)
     // Find the first row enabling the subtraction selector
     auto row = std::ranges::find_if(trace.begin(), trace.end(), [](Row r) { return r.main_sel_op_sub == 1; });
     EXPECT_EQ(row->main_ic, 10000); // 47123 - 37123 = 10000
-    validate_trace(std::move(trace), public_inputs, {}, true);
+    validate_trace(std::move(trace), public_inputs, {}, {}, true);
 }
 
 // Positive test for multiple MUL opcodes
@@ -805,7 +805,7 @@ TEST_F(AvmExecutionTests, toRadixLeOpcode)
     }
     EXPECT_EQ(returndata, expected_output);
 
-    validate_trace(std::move(trace), public_inputs, { FF::modulus - FF(1) });
+    validate_trace(std::move(trace), public_inputs, { FF::modulus - FF(1) }, returndata);
 }
 
 // // Positive test with SHA256COMPRESSION.
@@ -873,7 +873,7 @@ TEST_F(AvmExecutionTests, sha256CompressionOpcode)
 
     EXPECT_EQ(returndata, expected_output);
 
-    validate_trace(std::move(trace), public_inputs, calldata);
+    validate_trace(std::move(trace), public_inputs, calldata, returndata);
 }
 
 // Positive test with SHA256
@@ -941,7 +941,7 @@ TEST_F(AvmExecutionTests, sha256Opcode)
 
     EXPECT_EQ(returndata, expected_output);
 
-    validate_trace(std::move(trace), public_inputs);
+    validate_trace(std::move(trace), public_inputs, calldata, returndata);
 }
 
 // Positive test with POSEIDON2_PERM.
@@ -992,7 +992,7 @@ TEST_F(AvmExecutionTests, poseidon2PermutationOpCode)
 
     EXPECT_EQ(returndata, expected_output);
 
-    validate_trace(std::move(trace), public_inputs, calldata);
+    validate_trace(std::move(trace), public_inputs, calldata, returndata);
 }
 
 // Positive test with Keccakf1600.
@@ -1066,7 +1066,7 @@ TEST_F(AvmExecutionTests, keccakf1600OpCode)
 
     EXPECT_EQ(returndata, expected_output);
 
-    validate_trace(std::move(trace), public_inputs);
+    validate_trace(std::move(trace), public_inputs, calldata, returndata);
 }
 
 // Positive test with Keccak.
@@ -1124,7 +1124,7 @@ TEST_F(AvmExecutionTests, keccakOpCode)
 
     EXPECT_EQ(returndata, expected_output);
 
-    validate_trace(std::move(trace), public_inputs);
+    validate_trace(std::move(trace), public_inputs, calldata, returndata);
 }
 
 // Positive test with Pedersen.
@@ -1177,7 +1177,7 @@ TEST_F(AvmExecutionTests, pedersenHashOpCode)
 
     EXPECT_EQ(returndata[0], expected_output);
 
-    validate_trace(std::move(trace), public_inputs, calldata);
+    validate_trace(std::move(trace), public_inputs, calldata, returndata);
 }
 //
 // Positive test with EmbeddedCurveAdd
@@ -1239,7 +1239,7 @@ TEST_F(AvmExecutionTests, embeddedCurveAddOpCode)
 
     EXPECT_EQ(returndata, expected_output);
 
-    validate_trace(std::move(trace), public_inputs, calldata);
+    validate_trace(std::move(trace), public_inputs, calldata, returndata);
 }
 
 // Positive test with MSM
@@ -1316,7 +1316,7 @@ TEST_F(AvmExecutionTests, msmOpCode)
 
     EXPECT_EQ(returndata, expected_output);
 
-    validate_trace(std::move(trace), public_inputs, calldata);
+    validate_trace(std::move(trace), public_inputs, calldata, returndata);
 }
 
 // Positive test for Kernel Input opcodes
@@ -1451,9 +1451,10 @@ TEST_F(AvmExecutionTests, kernelInputOpcodes)
 
     // The return data for this test should be a the opcodes in sequence, as the opcodes dst address lines up with
     // this array The returndata call above will then return this array
-    std::vector<FF> returndata = { sender,     address, storage_address, function_selector,       transaction_fee,
-                                   chainid,    version, blocknumber,     /*coinbase,*/ timestamp, feeperl2gas,
-                                   feeperdagas };
+    std::vector<FF> const expected_returndata = {
+        address,     storage_address,         sender,      function_selector, transaction_fee, chainid, version,
+        blocknumber, /*coinbase,*/ timestamp, feeperl2gas, feeperdagas,
+    };
 
     // Set up public inputs to contain the above values
     // TODO: maybe have a javascript like object construction so that this is readable
@@ -1476,7 +1477,11 @@ TEST_F(AvmExecutionTests, kernelInputOpcodes)
     public_inputs_vec[FEE_PER_DA_GAS_OFFSET] = feeperdagas;
     public_inputs_vec[FEE_PER_L2_GAS_OFFSET] = feeperl2gas;
 
+    std::vector<FF> returndata;
     auto trace = Execution::gen_trace(instructions, returndata, calldata, public_inputs_vec);
+
+    // Validate returndata
+    EXPECT_EQ(returndata, expected_returndata);
 
     // Validate that the opcode read the correct value into ia
     // Check address
@@ -1539,7 +1544,7 @@ TEST_F(AvmExecutionTests, kernelInputOpcodes)
         std::ranges::find_if(trace.begin(), trace.end(), [](Row r) { return r.main_sel_op_fee_per_l2_gas == 1; });
     EXPECT_EQ(feeperl2gas_row->main_ia, feeperl2gas);
 
-    validate_trace(std::move(trace), Execution::convert_public_inputs(public_inputs_vec));
+    validate_trace(std::move(trace), Execution::convert_public_inputs(public_inputs_vec), calldata, returndata);
 }
 
 // Positive test for L2GASLEFT opcode
@@ -1693,7 +1698,7 @@ TEST_F(AvmExecutionTests, kernelOutputEmitOpcodes)
     EXPECT_EQ(emit_note_hash_row->kernel_side_effect_counter, 0);
 
     // Get the row of the first note hash out
-    uint32_t emit_note_hash_out_offset = AvmKernelTraceBuilder::START_EMIT_NOTE_HASH_WRITE_OFFSET;
+    uint32_t emit_note_hash_out_offset = START_EMIT_NOTE_HASH_WRITE_OFFSET;
     auto emit_note_hash_kernel_out_row = std::ranges::find_if(
         trace.begin(), trace.end(), [&](Row r) { return r.main_clk == emit_note_hash_out_offset; });
     EXPECT_EQ(emit_note_hash_kernel_out_row->kernel_kernel_value_out, 1);
@@ -1706,7 +1711,7 @@ TEST_F(AvmExecutionTests, kernelOutputEmitOpcodes)
     EXPECT_EQ(emit_nullifier_row->main_ia, 1);
     EXPECT_EQ(emit_nullifier_row->kernel_side_effect_counter, 1);
 
-    uint32_t emit_nullifier_out_offset = AvmKernelTraceBuilder::START_EMIT_NULLIFIER_WRITE_OFFSET;
+    uint32_t emit_nullifier_out_offset = START_EMIT_NULLIFIER_WRITE_OFFSET;
     auto emit_nullifier_kernel_out_row = std::ranges::find_if(
         trace.begin(), trace.end(), [&](Row r) { return r.main_clk == emit_nullifier_out_offset; });
     EXPECT_EQ(emit_nullifier_kernel_out_row->kernel_kernel_value_out, 1);
@@ -1719,7 +1724,7 @@ TEST_F(AvmExecutionTests, kernelOutputEmitOpcodes)
     EXPECT_EQ(emit_log_row->main_ia, 1);
     EXPECT_EQ(emit_log_row->kernel_side_effect_counter, 2);
 
-    uint32_t emit_log_out_offset = AvmKernelTraceBuilder::START_EMIT_UNENCRYPTED_LOG_WRITE_OFFSET;
+    uint32_t emit_log_out_offset = START_EMIT_UNENCRYPTED_LOG_WRITE_OFFSET;
     auto emit_log_kernel_out_row =
         std::ranges::find_if(trace.begin(), trace.end(), [&](Row r) { return r.main_clk == emit_log_out_offset; });
     EXPECT_EQ(emit_log_kernel_out_row->kernel_kernel_value_out, 1);
@@ -1733,13 +1738,12 @@ TEST_F(AvmExecutionTests, kernelOutputEmitOpcodes)
     EXPECT_EQ(send_row->main_ib, 1);
     EXPECT_EQ(send_row->kernel_side_effect_counter, 3);
 
-    auto msg_out_row = std::ranges::find_if(trace.begin(), trace.end(), [&](Row r) {
-        return r.main_clk == AvmKernelTraceBuilder::START_L2_TO_L1_MSG_WRITE_OFFSET;
-    });
+    auto msg_out_row = std::ranges::find_if(
+        trace.begin(), trace.end(), [&](Row r) { return r.main_clk == START_EMIT_L2_TO_L1_MSG_WRITE_OFFSET; });
     EXPECT_EQ(msg_out_row->kernel_kernel_value_out, 1);
     EXPECT_EQ(msg_out_row->kernel_kernel_side_effect_out, 3);
     EXPECT_EQ(msg_out_row->kernel_kernel_metadata_out, 1);
-    feed_output(AvmKernelTraceBuilder::START_L2_TO_L1_MSG_WRITE_OFFSET, 1, 3, 1);
+    feed_output(START_EMIT_L2_TO_L1_MSG_WRITE_OFFSET, 1, 3, 1);
 
     validate_trace(std::move(trace), public_inputs);
 }
@@ -1790,7 +1794,7 @@ TEST_F(AvmExecutionTests, kernelOutputStorageLoadOpcodeSimple)
     EXPECT_EQ(sload_row->kernel_side_effect_counter, 0);
 
     // Get the row of the first read storage read out
-    uint32_t sload_out_offset = AvmKernelTraceBuilder::START_SLOAD_WRITE_OFFSET;
+    uint32_t sload_out_offset = START_SLOAD_WRITE_OFFSET;
     auto sload_kernel_out_row =
         std::ranges::find_if(trace.begin(), trace.end(), [&](Row r) { return r.main_clk == sload_out_offset; });
     EXPECT_EQ(sload_kernel_out_row->kernel_kernel_value_out, 42); // value
@@ -1851,7 +1855,7 @@ TEST_F(AvmExecutionTests, kernelOutputStorageLoadOpcodeComplex)
     EXPECT_EQ(sload_row->kernel_side_effect_counter, 1);
 
     // Get the row of the first read storage read out
-    uint32_t sload_out_offset = AvmKernelTraceBuilder::START_SLOAD_WRITE_OFFSET;
+    uint32_t sload_out_offset = START_SLOAD_WRITE_OFFSET;
     auto sload_kernel_out_row =
         std::ranges::find_if(trace.begin(), trace.end(), [&](Row r) { return r.main_clk == sload_out_offset; });
     EXPECT_EQ(sload_kernel_out_row->kernel_kernel_value_out, 42); // value
@@ -1903,7 +1907,7 @@ TEST_F(AvmExecutionTests, kernelOutputStorageStoreOpcodeSimple)
     EXPECT_EQ(sstore_row->kernel_side_effect_counter, 0);
 
     // Get the row of the first storage write out
-    uint32_t sstore_out_offset = AvmKernelTraceBuilder::START_SSTORE_WRITE_OFFSET;
+    uint32_t sstore_out_offset = START_SSTORE_WRITE_OFFSET;
     auto sstore_kernel_out_row =
         std::ranges::find_if(trace.begin(), trace.end(), [&](Row r) { return r.main_clk == sstore_out_offset; });
 
@@ -1963,7 +1967,7 @@ TEST_F(AvmExecutionTests, kernelOutputStorageStoreOpcodeComplex)
     EXPECT_EQ(sstore_row->kernel_side_effect_counter, 1);
 
     // Get the row of the first storage write out
-    uint32_t sstore_out_offset = AvmKernelTraceBuilder::START_SSTORE_WRITE_OFFSET;
+    uint32_t sstore_out_offset = START_SSTORE_WRITE_OFFSET;
     auto sstore_kernel_out_row =
         std::ranges::find_if(trace.begin(), trace.end(), [&](Row r) { return r.main_clk == sstore_out_offset; });
     EXPECT_EQ(sstore_kernel_out_row->kernel_kernel_value_out, 42); // value
@@ -2032,7 +2036,7 @@ TEST_F(AvmExecutionTests, kernelOutputStorageOpcodes)
     EXPECT_EQ(sload_row->kernel_side_effect_counter, 0);
 
     // Get the row of the first storage read out
-    uint32_t sload_out_offset = AvmKernelTraceBuilder::START_SLOAD_WRITE_OFFSET;
+    uint32_t sload_out_offset = START_SLOAD_WRITE_OFFSET;
     auto sload_kernel_out_row =
         std::ranges::find_if(trace.begin(), trace.end(), [&](Row r) { return r.main_clk == sload_out_offset; });
     EXPECT_EQ(sload_kernel_out_row->kernel_kernel_value_out, 42); // value
@@ -2047,7 +2051,7 @@ TEST_F(AvmExecutionTests, kernelOutputStorageOpcodes)
     EXPECT_EQ(sstore_row->kernel_side_effect_counter, 1);
 
     // Get the row of the first storage write out
-    uint32_t sstore_out_offset = AvmKernelTraceBuilder::START_SSTORE_WRITE_OFFSET;
+    uint32_t sstore_out_offset = START_SSTORE_WRITE_OFFSET;
     auto sstore_kernel_out_row =
         std::ranges::find_if(trace.begin(), trace.end(), [&](Row r) { return r.main_clk == sstore_out_offset; });
     EXPECT_EQ(sstore_kernel_out_row->kernel_kernel_value_out, 42); // value
@@ -2112,13 +2116,12 @@ TEST_F(AvmExecutionTests, kernelOutputHashExistsOpcodes)
     EXPECT_EQ(note_hash_row->main_ib, 1); // Storage slot
     EXPECT_EQ(note_hash_row->kernel_side_effect_counter, 0);
 
-    auto note_hash_out_row = std::ranges::find_if(trace.begin(), trace.end(), [&](Row r) {
-        return r.main_clk == AvmKernelTraceBuilder::START_NOTE_HASH_EXISTS_WRITE_OFFSET;
-    });
+    auto note_hash_out_row = std::ranges::find_if(
+        trace.begin(), trace.end(), [&](Row r) { return r.main_clk == START_NOTE_HASH_EXISTS_WRITE_OFFSET; });
     EXPECT_EQ(note_hash_out_row->kernel_kernel_value_out, 1); // value
     EXPECT_EQ(note_hash_out_row->kernel_kernel_side_effect_out, 0);
     EXPECT_EQ(note_hash_out_row->kernel_kernel_metadata_out, 1); // exists
-    feed_output(AvmKernelTraceBuilder::START_NOTE_HASH_EXISTS_WRITE_OFFSET, 1, 0, 1);
+    feed_output(START_NOTE_HASH_EXISTS_WRITE_OFFSET, 1, 0, 1);
 
     // CHECK NULLIFIEREXISTS
     auto nullifier_row =
@@ -2127,13 +2130,12 @@ TEST_F(AvmExecutionTests, kernelOutputHashExistsOpcodes)
     EXPECT_EQ(nullifier_row->main_ib, 1); // Storage slot
     EXPECT_EQ(nullifier_row->kernel_side_effect_counter, 1);
 
-    auto nullifier_out_row = std::ranges::find_if(trace.begin(), trace.end(), [&](Row r) {
-        return r.main_clk == AvmKernelTraceBuilder::START_NULLIFIER_EXISTS_OFFSET;
-    });
+    auto nullifier_out_row = std::ranges::find_if(
+        trace.begin(), trace.end(), [&](Row r) { return r.main_clk == START_NULLIFIER_EXISTS_OFFSET; });
     EXPECT_EQ(nullifier_out_row->kernel_kernel_value_out, 1); // value
     EXPECT_EQ(nullifier_out_row->kernel_kernel_side_effect_out, 1);
     EXPECT_EQ(nullifier_out_row->kernel_kernel_metadata_out, 1); // exists
-    feed_output(AvmKernelTraceBuilder::START_NULLIFIER_EXISTS_OFFSET, 1, 1, 1);
+    feed_output(START_NULLIFIER_EXISTS_OFFSET, 1, 1, 1);
 
     // CHECK L1TOL2MSGEXISTS
     auto l1_to_l2_row =
@@ -2142,13 +2144,12 @@ TEST_F(AvmExecutionTests, kernelOutputHashExistsOpcodes)
     EXPECT_EQ(l1_to_l2_row->main_ib, 1); // Storage slot
     EXPECT_EQ(l1_to_l2_row->kernel_side_effect_counter, 2);
 
-    auto msg_out_row = std::ranges::find_if(trace.begin(), trace.end(), [&](Row r) {
-        return r.main_clk == AvmKernelTraceBuilder::START_L1_TO_L2_MSG_EXISTS_WRITE_OFFSET;
-    });
+    auto msg_out_row = std::ranges::find_if(
+        trace.begin(), trace.end(), [&](Row r) { return r.main_clk == START_L1_TO_L2_MSG_EXISTS_WRITE_OFFSET; });
     EXPECT_EQ(msg_out_row->kernel_kernel_value_out, 1); // value
     EXPECT_EQ(msg_out_row->kernel_kernel_side_effect_out, 2);
     EXPECT_EQ(msg_out_row->kernel_kernel_metadata_out, 1); // exists
-    feed_output(AvmKernelTraceBuilder::START_L1_TO_L2_MSG_EXISTS_WRITE_OFFSET, 1, 2, 1);
+    feed_output(START_L1_TO_L2_MSG_EXISTS_WRITE_OFFSET, 1, 2, 1);
 
     validate_trace(std::move(trace), public_inputs);
 }
@@ -2233,7 +2234,7 @@ TEST_F(AvmExecutionTests, opCallOpcodes)
     auto trace = Execution::gen_trace(instructions, returndata, calldata, public_inputs_vec, execution_hints);
     EXPECT_EQ(returndata, std::vector<FF>({ 9, 8, 1 })); // The 1 represents the success
 
-    validate_trace(std::move(trace), public_inputs, calldata);
+    validate_trace(std::move(trace), public_inputs, calldata, returndata);
 }
 
 TEST_F(AvmExecutionTests, opGetContractInstanceOpcodes)
@@ -2272,7 +2273,7 @@ TEST_F(AvmExecutionTests, opGetContractInstanceOpcodes)
     auto trace = Execution::gen_trace(instructions, returndata, calldata, public_inputs_vec, execution_hints);
     EXPECT_EQ(returndata, std::vector<FF>({ 1, 2, 3, 4, 5, 6 })); // The first one represents true
 
-    validate_trace(std::move(trace), public_inputs, calldata);
+    validate_trace(std::move(trace), public_inputs, calldata, returndata);
 }
 // Negative test detecting an invalid opcode byte.
 TEST_F(AvmExecutionTests, invalidOpcode)

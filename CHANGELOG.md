@@ -1,5 +1,337 @@
 # Changelog
 
+## [0.46.2](https://github.com/AztecProtocol/aztec-packages/compare/aztec-packages-v0.46.1...aztec-packages-v0.46.2) (2024-07-10)
+
+
+### Features
+
+* Optimize assert_split_sorted_transformed_value_arrays ([#7417](https://github.com/AztecProtocol/aztec-packages/issues/7417)) ([4355b3f](https://github.com/AztecProtocol/aztec-packages/commit/4355b3f3084696c54f6cd44aed7baf6f4caa925d))
+
+
+### Bug Fixes
+
+* Updated docs ([#7418](https://github.com/AztecProtocol/aztec-packages/issues/7418)) ([ad3da14](https://github.com/AztecProtocol/aztec-packages/commit/ad3da14eb715c1ec4a1e3b5ffc3d792eb738e404))
+
+
+### Miscellaneous
+
+* **docs:** Cleanup voting tutorial and deployment guide ([#7406](https://github.com/AztecProtocol/aztec-packages/issues/7406)) ([60cead2](https://github.com/AztecProtocol/aztec-packages/commit/60cead28dbdc397e80dfa14e180d01e53c202f15))
+
+## [0.46.1](https://github.com/AztecProtocol/aztec-packages/compare/aztec-packages-v0.46.0...aztec-packages-v0.46.1) (2024-07-10)
+
+
+### Features
+
+* Apply `no_predicates` in stdlib (https://github.com/noir-lang/noir/pull/5454) ([6237d96](https://github.com/AztecProtocol/aztec-packages/commit/6237d96a0bc23a5ed656e7ba172fb57facd9c807))
+* Lsp rename/find-all-references for globals (https://github.com/noir-lang/noir/pull/5415) ([6237d96](https://github.com/AztecProtocol/aztec-packages/commit/6237d96a0bc23a5ed656e7ba172fb57facd9c807))
+* Lsp rename/find-all-references for local variables (https://github.com/noir-lang/noir/pull/5439) ([6237d96](https://github.com/AztecProtocol/aztec-packages/commit/6237d96a0bc23a5ed656e7ba172fb57facd9c807))
+* Remove duplicated array reads at constant indices (https://github.com/noir-lang/noir/pull/5445) ([6237d96](https://github.com/AztecProtocol/aztec-packages/commit/6237d96a0bc23a5ed656e7ba172fb57facd9c807))
+* Remove redundant `EnableSideEffects` instructions (https://github.com/noir-lang/noir/pull/5440) ([6237d96](https://github.com/AztecProtocol/aztec-packages/commit/6237d96a0bc23a5ed656e7ba172fb57facd9c807))
+
+
+### Bug Fixes
+
+* Account for the expected kind when resolving turbofish generics (https://github.com/noir-lang/noir/pull/5448) ([6237d96](https://github.com/AztecProtocol/aztec-packages/commit/6237d96a0bc23a5ed656e7ba172fb57facd9c807))
+* Added bb to noir-projects deps ([#7412](https://github.com/AztecProtocol/aztec-packages/issues/7412)) ([6d3ed3a](https://github.com/AztecProtocol/aztec-packages/commit/6d3ed3a5269f1354c8c722232fd6f1d46ac7a245))
+* Fix issue with unresolved results (https://github.com/noir-lang/noir/pull/5453) ([6237d96](https://github.com/AztecProtocol/aztec-packages/commit/6237d96a0bc23a5ed656e7ba172fb57facd9c807))
+* Prevent `no_predicates` from removing predicates in calling function (https://github.com/noir-lang/noir/pull/5452) ([6237d96](https://github.com/AztecProtocol/aztec-packages/commit/6237d96a0bc23a5ed656e7ba172fb57facd9c807))
+
+
+### Miscellaneous
+
+* Replace relative paths to noir-protocol-circuits ([db45302](https://github.com/AztecProtocol/aztec-packages/commit/db453026efa29dddc973f507b002c1c4fd1a3676))
+* Replace usage of `GrumpkinPoint` with `EmbeddedCurvePoint` ([#7382](https://github.com/AztecProtocol/aztec-packages/issues/7382)) ([5279695](https://github.com/AztecProtocol/aztec-packages/commit/52796958738f8f1eb90d9691ff489d189f9bce90))
+* Replace usage of `GrumpkinPrivateKey` with `EmbeddedCurveScalar` ([#7384](https://github.com/AztecProtocol/aztec-packages/issues/7384)) ([a917198](https://github.com/AztecProtocol/aztec-packages/commit/a917198c6a17063414087419d8cb1de93e6dc21e))
+
+## [0.46.0](https://github.com/AztecProtocol/aztec-packages/compare/aztec-packages-v0.45.1...aztec-packages-v0.46.0) (2024-07-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* constant inputs for blackbox ([#7222](https://github.com/AztecProtocol/aztec-packages/issues/7222))
+
+### Features
+
+* Add more slice methods to the stdlib (https://github.com/noir-lang/noir/pull/5424) ([6137a10](https://github.com/AztecProtocol/aztec-packages/commit/6137a10c9a1d052c1e80ba43aaa5a13f9bf08fee))
+* Constant inputs for blackbox ([#7222](https://github.com/AztecProtocol/aztec-packages/issues/7222)) ([9f9ded2](https://github.com/AztecProtocol/aztec-packages/commit/9f9ded2b99980b3b40fce9b55e72c91df1dc3d72))
+* Detect subgraphs that are completely independent from inputs or outputs (https://github.com/noir-lang/noir/pull/5402) ([c7b1ae4](https://github.com/AztecProtocol/aztec-packages/commit/c7b1ae40593c24530723f344111459a51ad5f0e5))
+* Lsp "go to definition" for modules (https://github.com/noir-lang/noir/pull/5406) ([c7b1ae4](https://github.com/AztecProtocol/aztec-packages/commit/c7b1ae40593c24530723f344111459a51ad5f0e5))
+* Lsp rename/find-all-references for traits (https://github.com/noir-lang/noir/pull/5409) ([c7b1ae4](https://github.com/AztecProtocol/aztec-packages/commit/c7b1ae40593c24530723f344111459a51ad5f0e5))
+* Lsp rename/find-all-references for type aliases (https://github.com/noir-lang/noir/pull/5414) ([6137a10](https://github.com/AztecProtocol/aztec-packages/commit/6137a10c9a1d052c1e80ba43aaa5a13f9bf08fee))
+* Sync from aztec-packages (https://github.com/noir-lang/noir/pull/5408) ([c7b1ae4](https://github.com/AztecProtocol/aztec-packages/commit/c7b1ae40593c24530723f344111459a51ad5f0e5))
+* Sync from aztec-packages (https://github.com/noir-lang/noir/pull/5432) ([6137a10](https://github.com/AztecProtocol/aztec-packages/commit/6137a10c9a1d052c1e80ba43aaa5a13f9bf08fee))
+* TXE docs and usability ([#7305](https://github.com/AztecProtocol/aztec-packages/issues/7305)) ([6b2a351](https://github.com/AztecProtocol/aztec-packages/commit/6b2a351910f4e95ade690157de0574cb9a10b4e3))
+* Unquote multiple items from annotations (https://github.com/noir-lang/noir/pull/5441) ([6137a10](https://github.com/AztecProtocol/aztec-packages/commit/6137a10c9a1d052c1e80ba43aaa5a13f9bf08fee))
+* Use BB code hash for vk caching ([#7396](https://github.com/AztecProtocol/aztec-packages/issues/7396)) ([b03f1a2](https://github.com/AztecProtocol/aztec-packages/commit/b03f1a2e3927207b314bc16b3bf90e727088541f))
+* VK tree ([#6914](https://github.com/AztecProtocol/aztec-packages/issues/6914)) ([8631237](https://github.com/AztecProtocol/aztec-packages/commit/863123729fed0f4a150e634f52da06ac6b581162))
+
+
+### Bug Fixes
+
+* Added a comment to clarify how to launch TXE ([#7402](https://github.com/AztecProtocol/aztec-packages/issues/7402)) ([1ca48a4](https://github.com/AztecProtocol/aztec-packages/commit/1ca48a4355370644dceb6680643680f7e8cd5228))
+* Added missing dep ([#7405](https://github.com/AztecProtocol/aztec-packages/issues/7405)) ([1cb968a](https://github.com/AztecProtocol/aztec-packages/commit/1cb968a6b9e1293cdb14d1555fd3d5bba8cae937))
+* Allow importing notes from other contracts and inject them in the macros ([#7349](https://github.com/AztecProtocol/aztec-packages/issues/7349)) ([586c0b0](https://github.com/AztecProtocol/aztec-packages/commit/586c0b019d0c2c462188f03c9c31d25a46e35eb6))
+* Change panic to error in interpreter (https://github.com/noir-lang/noir/pull/5446) ([6137a10](https://github.com/AztecProtocol/aztec-packages/commit/6137a10c9a1d052c1e80ba43aaa5a13f9bf08fee))
+* Complete call stacks with no_predicates (https://github.com/noir-lang/noir/pull/5418) ([c7b1ae4](https://github.com/AztecProtocol/aztec-packages/commit/c7b1ae40593c24530723f344111459a51ad5f0e5))
+* Correct range for overlfowing/underflowing integer assignment (https://github.com/noir-lang/noir/pull/5416) ([c7b1ae4](https://github.com/AztecProtocol/aztec-packages/commit/c7b1ae40593c24530723f344111459a51ad5f0e5))
+* **e2e snapshots:** Be specific about ipv4 localhost ([#7350](https://github.com/AztecProtocol/aztec-packages/issues/7350)) ([e2bbf06](https://github.com/AztecProtocol/aztec-packages/commit/e2bbf06310657637178fd1cc62f00f5db5c97c15))
+* Fields fromstring not working as intended ([#7365](https://github.com/AztecProtocol/aztec-packages/issues/7365)) ([633eb6b](https://github.com/AztecProtocol/aztec-packages/commit/633eb6b73e5e5c782e871f826435fcb9850271eb))
+* Included argshash computation in public call_interfaces and cleanup ([#7354](https://github.com/AztecProtocol/aztec-packages/issues/7354)) ([13e9b94](https://github.com/AztecProtocol/aztec-packages/commit/13e9b9435cbdab7d0ccd75e20ef6a155345bb842))
+* Lsp find struct reference in return locations and paths (https://github.com/noir-lang/noir/pull/5404) ([c7b1ae4](https://github.com/AztecProtocol/aztec-packages/commit/c7b1ae40593c24530723f344111459a51ad5f0e5))
+* Lsp struct rename/reference difference (https://github.com/noir-lang/noir/pull/5411) ([6137a10](https://github.com/AztecProtocol/aztec-packages/commit/6137a10c9a1d052c1e80ba43aaa5a13f9bf08fee))
+* Privacy leak in private refund ([#7358](https://github.com/AztecProtocol/aztec-packages/issues/7358)) ([e05f6f0](https://github.com/AztecProtocol/aztec-packages/commit/e05f6f03263cd8760c8490389458e3c158ad24b3)), closes [#7321](https://github.com/AztecProtocol/aztec-packages/issues/7321)
+
+
+### Miscellaneous
+
+* Add remaining slice methods to the interpreter (https://github.com/noir-lang/noir/pull/5422) ([c7b1ae4](https://github.com/AztecProtocol/aztec-packages/commit/c7b1ae40593c24530723f344111459a51ad5f0e5))
+* Add test and benchmarks for poseidon2 (https://github.com/noir-lang/noir/pull/5386) ([c7b1ae4](https://github.com/AztecProtocol/aztec-packages/commit/c7b1ae40593c24530723f344111459a51ad5f0e5))
+* **avm:** Avoid including flavor where possible ([#7361](https://github.com/AztecProtocol/aztec-packages/issues/7361)) ([dbdffd6](https://github.com/AztecProtocol/aztec-packages/commit/dbdffd60b12aa5152fbd2da7d20abc8550d33cef))
+* **avm:** Better log_derivative_inverse_round ([#7360](https://github.com/AztecProtocol/aztec-packages/issues/7360)) ([6329833](https://github.com/AztecProtocol/aztec-packages/commit/63298337162b80c8d9b82c94760a0fb7be0fe940))
+* **avm:** Make stats thread safe ([#7393](https://github.com/AztecProtocol/aztec-packages/issues/7393)) ([894ac3b](https://github.com/AztecProtocol/aztec-packages/commit/894ac3b904b8753f2820c7170d70e491201e8ede))
+* **avm:** Smaller prover ([#7359](https://github.com/AztecProtocol/aztec-packages/issues/7359)) ([7d8c833](https://github.com/AztecProtocol/aztec-packages/commit/7d8c833f94f5c796cb146e6fb5a961e471163ec0))
+* **avm:** Smaller transcript ([#7357](https://github.com/AztecProtocol/aztec-packages/issues/7357)) ([3952a44](https://github.com/AztecProtocol/aztec-packages/commit/3952a444629fc03616089c27d0e037240db7b4e9))
+* **bb:** Do not instantiate Relation ([#7389](https://github.com/AztecProtocol/aztec-packages/issues/7389)) ([d9cbf4c](https://github.com/AztecProtocol/aztec-packages/commit/d9cbf4c289d3b3952f84540dadf35e0b410eef2a))
+* Counters ([#7342](https://github.com/AztecProtocol/aztec-packages/issues/7342)) ([819f370](https://github.com/AztecProtocol/aztec-packages/commit/819f37002a253cdba8c46daac5d68f64fa11f19c))
+* **docs:** Fix link to docker ([#7395](https://github.com/AztecProtocol/aztec-packages/issues/7395)) ([ad4a401](https://github.com/AztecProtocol/aztec-packages/commit/ad4a401ad4c56734043ddfd12bf8cf126e43988f))
+* **docs:** Update token tutorial ([#7241](https://github.com/AztecProtocol/aztec-packages/issues/7241)) ([0414eb5](https://github.com/AztecProtocol/aztec-packages/commit/0414eb50fff3fbaf12a15bfc2e111b480bb750a4))
+* Dummy workflow (https://github.com/noir-lang/noir/pull/5438) ([6137a10](https://github.com/AztecProtocol/aztec-packages/commit/6137a10c9a1d052c1e80ba43aaa5a13f9bf08fee))
+* Extracts refactoring of reading error payloads from [#5403](https://github.com/AztecProtocol/aztec-packages/issues/5403) (https://github.com/noir-lang/noir/pull/5413) ([6137a10](https://github.com/AztecProtocol/aztec-packages/commit/6137a10c9a1d052c1e80ba43aaa5a13f9bf08fee))
+* Generate declaration files for VKs ([#7391](https://github.com/AztecProtocol/aztec-packages/issues/7391)) ([7c96636](https://github.com/AztecProtocol/aztec-packages/commit/7c966365b93fd6cbd8827ed7c44511513e1567fc))
+* Merge `BarretenbergVerifierBackend` and `BarretenbergBackend` (https://github.com/noir-lang/noir/pull/5399) ([6137a10](https://github.com/AztecProtocol/aztec-packages/commit/6137a10c9a1d052c1e80ba43aaa5a13f9bf08fee))
+* Move SSA checks to a new folder (https://github.com/noir-lang/noir/pull/5434) ([6137a10](https://github.com/AztecProtocol/aztec-packages/commit/6137a10c9a1d052c1e80ba43aaa5a13f9bf08fee))
+* Notify Noir team on changes to the stdlib ([#7387](https://github.com/AztecProtocol/aztec-packages/issues/7387)) ([061aac3](https://github.com/AztecProtocol/aztec-packages/commit/061aac33a6713f62a73c5d1920687903c5fb499f))
+* Optimize private call stack item hash for gate count ([#7285](https://github.com/AztecProtocol/aztec-packages/issues/7285)) ([783d9b6](https://github.com/AztecProtocol/aztec-packages/commit/783d9b67205dcf8ba67a3eb989db8bc70a4b67f7))
+* Optimize public call stack item hashing ([#7330](https://github.com/AztecProtocol/aztec-packages/issues/7330)) ([4a5093c](https://github.com/AztecProtocol/aztec-packages/commit/4a5093cd6639305a7e4c7876da94dcf7cb71ebc2))
+* Refactor logic around inlining `no_predicates` functions (https://github.com/noir-lang/noir/pull/5433) ([6137a10](https://github.com/AztecProtocol/aztec-packages/commit/6137a10c9a1d052c1e80ba43aaa5a13f9bf08fee))
+* Replace relative paths to noir-protocol-circuits ([8510269](https://github.com/AztecProtocol/aztec-packages/commit/8510269f007afe8136eb0d77667fbb44b8148ce1))
+* Replace relative paths to noir-protocol-circuits ([9eb8d1c](https://github.com/AztecProtocol/aztec-packages/commit/9eb8d1c940dbda5c6efe931450264198e4e7738d))
+* Sync external contributions ([#6984](https://github.com/AztecProtocol/aztec-packages/issues/6984)) ([a265b29](https://github.com/AztecProtocol/aztec-packages/commit/a265b29ff473927dbc2fb0beb5c9bf69b7ef1ca9))
+
+
+### Documentation
+
+* Making private refunds smooth-brain friendly ([#7343](https://github.com/AztecProtocol/aztec-packages/issues/7343)) ([533c937](https://github.com/AztecProtocol/aztec-packages/commit/533c9378df19b3a4c3d5d2f9489e64d1fa2e4fb8))
+* Update overview.md (fix link text) ([#7344](https://github.com/AztecProtocol/aztec-packages/issues/7344)) ([79e5856](https://github.com/AztecProtocol/aztec-packages/commit/79e5856bb065d0fdd9b484ab9c78c1e978d4cacb))
+
+## [0.45.1](https://github.com/AztecProtocol/aztec-packages/compare/aztec-packages-v0.45.0...aztec-packages-v0.45.1) (2024-07-04)
+
+
+### Features
+
+* Add support for fieldable in events ([#7310](https://github.com/AztecProtocol/aztec-packages/issues/7310)) ([694cebc](https://github.com/AztecProtocol/aztec-packages/commit/694cebc10c5713b2fa82ac6a29961bf44b026046)), closes [#6951](https://github.com/AztecProtocol/aztec-packages/issues/6951)
+* **avm:** Use template engine for codegen ([#7299](https://github.com/AztecProtocol/aztec-packages/issues/7299)) ([d4359a3](https://github.com/AztecProtocol/aztec-packages/commit/d4359a34668fc389a8a5c5a8b8493f0dc8a5d4ae))
+* Build releases for `aarch64-unknown-linux-gnu` target (https://github.com/noir-lang/noir/pull/5289) ([2ae17f2](https://github.com/AztecProtocol/aztec-packages/commit/2ae17f2177380244f695575c169cc591496cf3ad))
+* Create codeql.yml ([#7318](https://github.com/AztecProtocol/aztec-packages/issues/7318)) ([11fcfd2](https://github.com/AztecProtocol/aztec-packages/commit/11fcfd22f9c322a07d4b75a440c2fb0baa53e305))
+* Deploy l1 contracts on devnet ([#7306](https://github.com/AztecProtocol/aztec-packages/issues/7306)) ([b8eef86](https://github.com/AztecProtocol/aztec-packages/commit/b8eef86228e8ccd7a2917d1e89a6994b11c18db5))
+* Implement trait dispatch in the comptime interpreter (https://github.com/noir-lang/noir/pull/5376) ([ccfa69c](https://github.com/AztecProtocol/aztec-packages/commit/ccfa69c24c94d657f7d0881203ada133ed5d2ef9))
+* Lsp "find all references" (https://github.com/noir-lang/noir/pull/5395) ([10076d9](https://github.com/AztecProtocol/aztec-packages/commit/10076d9663dcf40ac712df69e3a71a1bb54866e2))
+* Lsp rename struct (https://github.com/noir-lang/noir/pull/5380) ([2ae17f2](https://github.com/AztecProtocol/aztec-packages/commit/2ae17f2177380244f695575c169cc591496cf3ad))
+* **lsp:** Allow function rename (https://github.com/noir-lang/noir/pull/4294) ([ccfa69c](https://github.com/AztecProtocol/aztec-packages/commit/ccfa69c24c94d657f7d0881203ada133ed5d2ef9))
+* Remove note hash nullifier counter. ([#7294](https://github.com/AztecProtocol/aztec-packages/issues/7294)) ([c0c9144](https://github.com/AztecProtocol/aztec-packages/commit/c0c9144a961da895c4885af2e59e22617325e61a))
+* Sync from aztec-packages (https://github.com/noir-lang/noir/pull/5387) ([ccfa69c](https://github.com/AztecProtocol/aztec-packages/commit/ccfa69c24c94d657f7d0881203ada133ed5d2ef9))
+* Sync from aztec-packages (https://github.com/noir-lang/noir/pull/5401) ([10076d9](https://github.com/AztecProtocol/aztec-packages/commit/10076d9663dcf40ac712df69e3a71a1bb54866e2))
+
+
+### Bug Fixes
+
+* Align reset variant sizes after constants changes ([#7340](https://github.com/AztecProtocol/aztec-packages/issues/7340)) ([e431b6f](https://github.com/AztecProtocol/aztec-packages/commit/e431b6f64937e8fba357f890bdc3042adf17cb44))
+* Correctly detect signed/unsigned integer overflows/underflows (https://github.com/noir-lang/noir/pull/5375) ([10076d9](https://github.com/AztecProtocol/aztec-packages/commit/10076d9663dcf40ac712df69e3a71a1bb54866e2))
+* **docs:** Fix broken docs link to gihtub (https://github.com/noir-lang/noir/pull/5398) ([10076d9](https://github.com/AztecProtocol/aztec-packages/commit/10076d9663dcf40ac712df69e3a71a1bb54866e2))
+* **docs:** Fix colour leak ([#7289](https://github.com/AztecProtocol/aztec-packages/issues/7289)) ([d3388d4](https://github.com/AztecProtocol/aztec-packages/commit/d3388d46f0c1c3a4c9f6a15abeae41f764039c10))
+* Don't panic when using undefined variables in the interpreter (https://github.com/noir-lang/noir/pull/5381) ([10076d9](https://github.com/AztecProtocol/aztec-packages/commit/10076d9663dcf40ac712df69e3a71a1bb54866e2))
+* Go to definition from `use` statement (https://github.com/noir-lang/noir/pull/5390) ([2ae17f2](https://github.com/AztecProtocol/aztec-packages/commit/2ae17f2177380244f695575c169cc591496cf3ad))
+* Go to definition from aliased use (https://github.com/noir-lang/noir/pull/5396) ([10076d9](https://github.com/AztecProtocol/aztec-packages/commit/10076d9663dcf40ac712df69e3a71a1bb54866e2))
+* ICE when using a comptime let variable in runtime code (https://github.com/noir-lang/noir/pull/5391) ([10076d9](https://github.com/AztecProtocol/aztec-packages/commit/10076d9663dcf40ac712df69e3a71a1bb54866e2))
+* Include artifacts in noir-contracts package.json ([#7339](https://github.com/AztecProtocol/aztec-packages/issues/7339)) ([7dd87c7](https://github.com/AztecProtocol/aztec-packages/commit/7dd87c7f73dd618c5b3fd1737ba0c915559df70b))
+* Only create d.ts files for contract artifacts ([#7307](https://github.com/AztecProtocol/aztec-packages/issues/7307)) ([b5e2a67](https://github.com/AztecProtocol/aztec-packages/commit/b5e2a6724084cfa576aeded78164e4dee222366f))
+* Remove event selector from unencrypted log ([#7309](https://github.com/AztecProtocol/aztec-packages/issues/7309)) ([c6eb734](https://github.com/AztecProtocol/aztec-packages/commit/c6eb73429cf8ed451d13d7f2701841a3eab36d16))
+* Remove panics in the interpreter when a builtin fails to type check (https://github.com/noir-lang/noir/pull/5382) ([ccfa69c](https://github.com/AztecProtocol/aztec-packages/commit/ccfa69c24c94d657f7d0881203ada133ed5d2ef9))
+* Replace expects in interpreter with errors (https://github.com/noir-lang/noir/pull/5383) ([ccfa69c](https://github.com/AztecProtocol/aztec-packages/commit/ccfa69c24c94d657f7d0881203ada133ed5d2ef9))
+* Replace std::HashMap with FxHashMap to fix frontend indeterminism (https://github.com/noir-lang/noir/pull/5385) ([ccfa69c](https://github.com/AztecProtocol/aztec-packages/commit/ccfa69c24c94d657f7d0881203ada133ed5d2ef9))
+* Truncate flamegraph text to the right ([#7333](https://github.com/AztecProtocol/aztec-packages/issues/7333)) ([b7c6593](https://github.com/AztecProtocol/aztec-packages/commit/b7c6593ccd5b2d6247d65a37d57b4c2d790981bb))
+
+
+### Miscellaneous
+
+* Add bb-pilcom to rust analyzer ([#7317](https://github.com/AztecProtocol/aztec-packages/issues/7317)) ([694e68e](https://github.com/AztecProtocol/aztec-packages/commit/694e68e369494b0a3515f0f3eb5ee637f72968ee))
+* ARGS_HASH constants 64 -&gt; 16 ([#7284](https://github.com/AztecProtocol/aztec-packages/issues/7284)) ([c19029a](https://github.com/AztecProtocol/aztec-packages/commit/c19029a9a2b331510856a12d51483336fa783e2f))
+* **avm:** Basic stat collection ([#7283](https://github.com/AztecProtocol/aztec-packages/issues/7283)) ([adf2331](https://github.com/AztecProtocol/aztec-packages/commit/adf233153d02ea5d4dcaa20357138bd2e91dc8d8))
+* **avm:** Less code in prover and verifier ([#7302](https://github.com/AztecProtocol/aztec-packages/issues/7302)) ([f401a9a](https://github.com/AztecProtocol/aztec-packages/commit/f401a9afc21af84105123393a77d87587a9a34dc))
+* **avm:** Migrate lookups and permutations ([#7335](https://github.com/AztecProtocol/aztec-packages/issues/7335)) ([56fe4fe](https://github.com/AztecProtocol/aztec-packages/commit/56fe4febc179aa6b329f2a2f3a2d8675d039909f))
+* **avm:** Migrate to template engine ([#7316](https://github.com/AztecProtocol/aztec-packages/issues/7316)) ([0fbfe11](https://github.com/AztecProtocol/aztec-packages/commit/0fbfe111329640b27684e6c55a45d08bb17e8e5a))
+* **avm:** Re-ordering routines by opcode order ([#7298](https://github.com/AztecProtocol/aztec-packages/issues/7298)) ([4bb512d](https://github.com/AztecProtocol/aztec-packages/commit/4bb512d6935ac03338a920ec1dbc810d77e0c58c))
+* **avm:** Remove shifts from full row ([#7327](https://github.com/AztecProtocol/aztec-packages/issues/7327)) ([4d641ee](https://github.com/AztecProtocol/aztec-packages/commit/4d641ee74a109030f63119ab9c0a71b5d2e2e7a6))
+* Charge for more l2 gas costs ([#7157](https://github.com/AztecProtocol/aztec-packages/issues/7157)) ([3ab00c4](https://github.com/AztecProtocol/aztec-packages/commit/3ab00c4903015d3f9e1e3fa1164ab71a88737257))
+* **docs:** Remove persona boxes from the landing page (https://github.com/noir-lang/noir/pull/5400) ([10076d9](https://github.com/AztecProtocol/aztec-packages/commit/10076d9663dcf40ac712df69e3a71a1bb54866e2))
+* Nuking "new" from names ([#7273](https://github.com/AztecProtocol/aztec-packages/issues/7273)) ([b12c6cb](https://github.com/AztecProtocol/aztec-packages/commit/b12c6cb54ec6b39baed6e6bb06ecf4ace3eeede5))
+* Refactor conversion between `FieldElement` and signed integers (https://github.com/noir-lang/noir/pull/5397) ([10076d9](https://github.com/AztecProtocol/aztec-packages/commit/10076d9663dcf40ac712df69e3a71a1bb54866e2))
+* Replace relative paths to noir-protocol-circuits ([0124665](https://github.com/AztecProtocol/aztec-packages/commit/0124665e226e4f2d97f25fa497e14592a1d2b6e0))
+* Replace relative paths to noir-protocol-circuits ([4007885](https://github.com/AztecProtocol/aztec-packages/commit/4007885b050fe37c2b798772382fe7462b220d9c))
+* Update flamegraph script link ([#7329](https://github.com/AztecProtocol/aztec-packages/issues/7329)) ([0ec83ee](https://github.com/AztecProtocol/aztec-packages/commit/0ec83eefbf83d568b37011d31afefc1874880286))
+* Use `mod.nr` files in stdlib (https://github.com/noir-lang/noir/pull/5379) ([ccfa69c](https://github.com/AztecProtocol/aztec-packages/commit/ccfa69c24c94d657f7d0881203ada133ed5d2ef9))
+
+## [0.45.0](https://github.com/AztecProtocol/aztec-packages/compare/aztec-packages-v0.44.0...aztec-packages-v0.45.0) (2024-07-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* error on too large integer value (https://github.com/noir-lang/noir/pull/5371)
+* rename struct-specific TypeDefinition -> StructDefinition (https://github.com/noir-lang/noir/pull/5356)
+* extend storage read oracle to receive address and block number ([#7243](https://github.com/AztecProtocol/aztec-packages/issues/7243))
+* split storage access oracles ([#7237](https://github.com/AztecProtocol/aztec-packages/issues/7237))
+* remove `dep::` prefix (https://github.com/noir-lang/noir/pull/4946)
+
+### Features
+
+* `mod.nr` entrypoint (https://github.com/noir-lang/noir/pull/5039) ([bb5cbab](https://github.com/AztecProtocol/aztec-packages/commit/bb5cbab945cfd61f6a0da79f8874a0fcdc59361a))
+* `static_assert` builtin (https://github.com/noir-lang/noir/pull/5342) ([eb9e9f6](https://github.com/AztecProtocol/aztec-packages/commit/eb9e9f6f2b3952760822faaacb7e851e936e0800))
+* Add `map`, `fold`, `reduce`, `any`, and `all` for slices (https://github.com/noir-lang/noir/pull/5331) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Add `set` and `set_unchecked` methods to `Vec` and `BoundedVec` (https://github.com/noir-lang/noir/pull/5241) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Add BoundedVec::map (https://github.com/noir-lang/noir/pull/5250) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Add fuzzer for Noir programs (https://github.com/noir-lang/noir/pull/5251) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Add new lenses for encryted notes ([#7238](https://github.com/AztecProtocol/aztec-packages/issues/7238)) ([c07cf2c](https://github.com/AztecProtocol/aztec-packages/commit/c07cf2cf2b004dba46a3138a1f64f207b6ee537f))
+* Add opcodes flamegraph and refactor gates flamegraph ([#7282](https://github.com/AztecProtocol/aztec-packages/issues/7282)) ([df3b27b](https://github.com/AztecProtocol/aztec-packages/commit/df3b27b8c603845598bf966100be3a21e8e442db))
+* Add outgoing keys support to getEvents ([#7239](https://github.com/AztecProtocol/aztec-packages/issues/7239)) ([77c304e](https://github.com/AztecProtocol/aztec-packages/commit/77c304ee70de3cf47f68b45c35c776a31d61af46))
+* Add support for wildcard types (https://github.com/noir-lang/noir/pull/5275) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* **avm:** Calldata gadget preliminaries ([#7227](https://github.com/AztecProtocol/aztec-packages/issues/7227)) ([79e8588](https://github.com/AztecProtocol/aztec-packages/commit/79e85883c90465cf2ff6e1a2d7af0e5d4d3e111c))
+* Build simple dictionary from inspecting ACIR program (https://github.com/noir-lang/noir/pull/5264) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Constant Honk proof sizes ([#6954](https://github.com/AztecProtocol/aztec-packages/issues/6954)) ([17c8d3a](https://github.com/AztecProtocol/aztec-packages/commit/17c8d3a00f3a2e500d5caa1fb438504bcd357e8a))
+* Disable nargo color output if stderr is tty (https://github.com/noir-lang/noir/pull/5346) ([eb9e9f6](https://github.com/AztecProtocol/aztec-packages/commit/eb9e9f6f2b3952760822faaacb7e851e936e0800))
+* **docs:** Macros explainer ([#7172](https://github.com/AztecProtocol/aztec-packages/issues/7172)) ([bb2ebfc](https://github.com/AztecProtocol/aztec-packages/commit/bb2ebfce8edae9e851c7c8fb9eb1d50673f4bec6))
+* Error on too large integer value (https://github.com/noir-lang/noir/pull/5371) ([bb5cbab](https://github.com/AztecProtocol/aztec-packages/commit/bb5cbab945cfd61f6a0da79f8874a0fcdc59361a))
+* Example of private token transfer event ([#7242](https://github.com/AztecProtocol/aztec-packages/issues/7242)) ([99ce26f](https://github.com/AztecProtocol/aztec-packages/commit/99ce26f568b5210ac800889b28d396aa9c9d7e3e))
+* **experimental:** Implement macro calls & splicing into `Expr` values (https://github.com/noir-lang/noir/pull/5203) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Extend storage read oracle to receive address and block number ([#7243](https://github.com/AztecProtocol/aztec-packages/issues/7243)) ([153b201](https://github.com/AztecProtocol/aztec-packages/commit/153b2010c5d79f308779370d240dfaa2a086ca3c))
+* **frontend:** Explicit numeric generics and type kinds (https://github.com/noir-lang/noir/pull/5155) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* **frontend:** Where clause on impl (https://github.com/noir-lang/noir/pull/5320) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Function selector opcode in AVM ([#7244](https://github.com/AztecProtocol/aztec-packages/issues/7244)) ([dde47e9](https://github.com/AztecProtocol/aztec-packages/commit/dde47e927ebe5606a272a35dd8c4f4876369b244))
+* Implement comptime support for `array_len` builtin (https://github.com/noir-lang/noir/pull/5272) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Implement comptime support for `as_slice` builtin (https://github.com/noir-lang/noir/pull/5276) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Insert trait impls into the program from type annotations (https://github.com/noir-lang/noir/pull/5327) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Let `should_fail_with` check that the failure reason contains the expected message (https://github.com/noir-lang/noir/pull/5319) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Make macros operate on token streams instead of AST nodes (https://github.com/noir-lang/noir/pull/5301) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Private refunds ([#7226](https://github.com/AztecProtocol/aztec-packages/issues/7226)) ([6fafff6](https://github.com/AztecProtocol/aztec-packages/commit/6fafff6e0ccda9d1e07beb5a5e8638f75b0345c2))
+* Remove `dep::` prefix (https://github.com/noir-lang/noir/pull/4946) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Remove event selector in logs from public context ([#7192](https://github.com/AztecProtocol/aztec-packages/issues/7192)) ([646d45a](https://github.com/AztecProtocol/aztec-packages/commit/646d45a0cb92634909fb38d0478181c8d1d814af))
+* Rename struct-specific TypeDefinition -&gt; StructDefinition (https://github.com/noir-lang/noir/pull/5356) ([bb5cbab](https://github.com/AztecProtocol/aztec-packages/commit/bb5cbab945cfd61f6a0da79f8874a0fcdc59361a))
+* Run `comptime` code from annotations on a type definition (https://github.com/noir-lang/noir/pull/5256) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Split storage access oracles ([#7237](https://github.com/AztecProtocol/aztec-packages/issues/7237)) ([51f7d65](https://github.com/AztecProtocol/aztec-packages/commit/51f7d65d69eede9508f44224db554d5185298509))
+* **stdlib:** Update stdlib to use explicit numeric generics (https://github.com/noir-lang/noir/pull/5306) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Store shared mutable hash ([#7169](https://github.com/AztecProtocol/aztec-packages/issues/7169)) ([868606e](https://github.com/AztecProtocol/aztec-packages/commit/868606e6c2c7b71043eabec7cc7b1eb8240fe4b3))
+* Sync from aztec-packages (https://github.com/noir-lang/noir/pull/5242) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Sync from aztec-packages (https://github.com/noir-lang/noir/pull/5340) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Sync from aztec-packages (https://github.com/noir-lang/noir/pull/5347) ([eb9e9f6](https://github.com/AztecProtocol/aztec-packages/commit/eb9e9f6f2b3952760822faaacb7e851e936e0800))
+* Sync from aztec-packages (https://github.com/noir-lang/noir/pull/5377) ([bb5cbab](https://github.com/AztecProtocol/aztec-packages/commit/bb5cbab945cfd61f6a0da79f8874a0fcdc59361a))
+* TXE fixes to avm opcodes and missing oracles, forced ci failure ([#7252](https://github.com/AztecProtocol/aztec-packages/issues/7252)) ([de303e2](https://github.com/AztecProtocol/aztec-packages/commit/de303e22e1a1a1115da444cabbe6155833b207b4))
+* Unconstrained variants for event emission ([#7251](https://github.com/AztecProtocol/aztec-packages/issues/7251)) ([6d093e3](https://github.com/AztecProtocol/aztec-packages/commit/6d093e3cb3ed2b81eebf2a7d923f7487b95749cd))
+* Unify unencrypted log emission and decoding ([#7232](https://github.com/AztecProtocol/aztec-packages/issues/7232)) ([354dba2](https://github.com/AztecProtocol/aztec-packages/commit/354dba2ae23a33419360e0983e325ce76939872d))
+* Update rebuild script ([#7225](https://github.com/AztecProtocol/aztec-packages/issues/7225)) ([af59247](https://github.com/AztecProtocol/aztec-packages/commit/af592474c1d57c9d7886763d04afeb793f98efe3))
+* Use runtime loops for brillig array initialization (https://github.com/noir-lang/noir/pull/5243) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Wonky rollups ([#7189](https://github.com/AztecProtocol/aztec-packages/issues/7189)) ([1de3746](https://github.com/AztecProtocol/aztec-packages/commit/1de3746bb691e2e26e9f5c7a90b4437d4433cd48))
+
+
+### Bug Fixes
+
+* Add more thorough check for whether a type is valid when passing it from constrained code to unconstrained code (https://github.com/noir-lang/noir/pull/5009) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Add support for nested arrays returned by oracles (https://github.com/noir-lang/noir/pull/5132) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Address compiler warnings coming from stdlib (https://github.com/noir-lang/noir/pull/5351) ([eb9e9f6](https://github.com/AztecProtocol/aztec-packages/commit/eb9e9f6f2b3952760822faaacb7e851e936e0800))
+* Avoid duplicating constant arrays (https://github.com/noir-lang/noir/pull/5287) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Avoid panic in type system (https://github.com/noir-lang/noir/pull/5332) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Avoid unnecessarily splitting expressions with multiplication terms with a shared term (https://github.com/noir-lang/noir/pull/5291) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Benchmark prover e2e test with proving ([#7175](https://github.com/AztecProtocol/aztec-packages/issues/7175)) ([431c14c](https://github.com/AztecProtocol/aztec-packages/commit/431c14ccca8bcbdeba51061cad6f6e01f054dd86))
+* Devnet deployment issues ([#7197](https://github.com/AztecProtocol/aztec-packages/issues/7197)) ([9cf4904](https://github.com/AztecProtocol/aztec-packages/commit/9cf49048eefd1f02d22c6b4a8db100b863f39f84))
+* Disable `if` optimization (https://github.com/noir-lang/noir/pull/5240) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* **docs:** Check for already deployed account contracts in token bridge tutorial ([#7234](https://github.com/AztecProtocol/aztec-packages/issues/7234)) ([d9efaf7](https://github.com/AztecProtocol/aztec-packages/commit/d9efaf792b921bdabcfc24bea150130c59b3644c))
+* **docs:** Historical reference library updates ([#7166](https://github.com/AztecProtocol/aztec-packages/issues/7166)) ([b3409c4](https://github.com/AztecProtocol/aztec-packages/commit/b3409c48b5d116698a67b4ceb52bd2fb4ee3c8ad))
+* Don't benchmark the "prove" command as it doesn't exist anymore (https://github.com/noir-lang/noir/pull/5323) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Don't lazily elaborate functions (https://github.com/noir-lang/noir/pull/5282) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* **elaborator:** Fix duplicate methods error (https://github.com/noir-lang/noir/pull/5225) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* **elaborator:** Fix regression introduced by lazy-global changes (https://github.com/noir-lang/noir/pull/5223) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Error when a local function is called in a comptime context (https://github.com/noir-lang/noir/pull/5334) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Fix authwit package ([#7204](https://github.com/AztecProtocol/aztec-packages/issues/7204)) ([98ccd41](https://github.com/AztecProtocol/aztec-packages/commit/98ccd4152ae8ed3e187f4bd8e18927d70627ff04))
+* Fix incorrect return type being applied to stdlib functions `modulus_be_bytes()`, `modulus_be_bits()`, etc. (https://github.com/noir-lang/noir/pull/5278) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Fix test to accomodate new max read requests ([#7286](https://github.com/AztecProtocol/aztec-packages/issues/7286)) ([a023367](https://github.com/AztecProtocol/aztec-packages/commit/a023367e20a11195e6d2b490f5c09a87997bd2ba))
+* Fix tokenization of unquoted types in macros (https://github.com/noir-lang/noir/pull/5326) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Fix usage of `#[abi(tag)]` attribute with elaborator (https://github.com/noir-lang/noir/pull/5298) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Handle struct with nested arrays in oracle return values (https://github.com/noir-lang/noir/pull/5244) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Ignore calls to `Intrinsic::AsWitness` during brillig codegen (https://github.com/noir-lang/noir/pull/5350) ([eb9e9f6](https://github.com/AztecProtocol/aztec-packages/commit/eb9e9f6f2b3952760822faaacb7e851e936e0800))
+* Implement generic functions in the interpreter (https://github.com/noir-lang/noir/pull/5330) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* **nargo_fmt:** Account for spaces before the generic list of a function (https://github.com/noir-lang/noir/pull/5303) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Replace panic in monomorphization with an error (https://github.com/noir-lang/noir/pull/5305) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Reran pil-&gt;cpp codegen & encode_and_encrypt_event_with_randomness fix ([#7247](https://github.com/AztecProtocol/aztec-packages/issues/7247)) ([fa15a45](https://github.com/AztecProtocol/aztec-packages/commit/fa15a450408181ffc50946ee56c4ae0fd8c5a61f))
+* Runtime brillig bigint id assignment (https://github.com/noir-lang/noir/pull/5369) ([bb5cbab](https://github.com/AztecProtocol/aztec-packages/commit/bb5cbab945cfd61f6a0da79f8874a0fcdc59361a))
+* Skip emission of brillig calls which will never be executed (https://github.com/noir-lang/noir/pull/5314) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* TS LSP being slow ([#7181](https://github.com/AztecProtocol/aztec-packages/issues/7181)) ([e934e87](https://github.com/AztecProtocol/aztec-packages/commit/e934e872d5a2fb3ca46646436de25777a33c4737))
+* Update `in_contract` flag before handling function metadata in elaborator (https://github.com/noir-lang/noir/pull/5292) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Use proper serialization in `AbiValue` (https://github.com/noir-lang/noir/pull/5270) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+
+
+### Miscellaneous
+
+* `static_assert` error message fix and split into is-dynamic and is-false (https://github.com/noir-lang/noir/pull/5353) ([eb9e9f6](https://github.com/AztecProtocol/aztec-packages/commit/eb9e9f6f2b3952760822faaacb7e851e936e0800))
+* Add back Pedersen blackbox functions (revert PR 5221) (https://github.com/noir-lang/noir/pull/5318) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Add log_hash as input in log emission in private context ([#7249](https://github.com/AztecProtocol/aztec-packages/issues/7249)) ([8b3dfe9](https://github.com/AztecProtocol/aztec-packages/commit/8b3dfe9dabc19e24f759b1a6c8ed14e2d9874149))
+* Add no predicate to poseidon2 (https://github.com/noir-lang/noir/pull/5252) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Add no-predicate to hash implementations (https://github.com/noir-lang/noir/pull/5253) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Add property tests for ABI encoding (https://github.com/noir-lang/noir/pull/5216) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Address TODO in `compat.nr` (https://github.com/noir-lang/noir/pull/5339) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* **avm-transpiler:** Better error messages ([#7217](https://github.com/AztecProtocol/aztec-packages/issues/7217)) ([27051ad](https://github.com/AztecProtocol/aztec-packages/commit/27051ad988b98d1b4a60064b2492cd987b1df7ac))
+* **avm:** Remove trailing minus zero in codegen ([#7185](https://github.com/AztecProtocol/aztec-packages/issues/7185)) ([f3c8166](https://github.com/AztecProtocol/aztec-packages/commit/f3c81661688cc04b64a389d8fd72484ca8580a05))
+* Avoid building contracts when producing gates report ([#7136](https://github.com/AztecProtocol/aztec-packages/issues/7136)) ([25507e6](https://github.com/AztecProtocol/aztec-packages/commit/25507e63e6a629a8a16ad47434141a95bbb0e102))
+* Bump `bb` to 0.43.0 (https://github.com/noir-lang/noir/pull/5321) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Bundle SSA Evaluator Options (https://github.com/noir-lang/noir/pull/5317) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* **ci:** Trigger a noir sync every morning at 8am ([#7280](https://github.com/AztecProtocol/aztec-packages/issues/7280)) ([412c016](https://github.com/AztecProtocol/aztec-packages/commit/412c0160073d642056855c649d9c59ad1ae100f3))
+* Copy across typo PR script from aztec-packages (https://github.com/noir-lang/noir/pull/5235) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Create separate crate just for noir artifacts (https://github.com/noir-lang/noir/pull/5162) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* **docs:** Fixing trailing slash issue (https://github.com/noir-lang/noir/pull/5233) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Fix examples (https://github.com/noir-lang/noir/pull/5357) ([eb9e9f6](https://github.com/AztecProtocol/aztec-packages/commit/eb9e9f6f2b3952760822faaacb7e851e936e0800))
+* Fix migration notes ([#7279](https://github.com/AztecProtocol/aztec-packages/issues/7279)) ([51d93eb](https://github.com/AztecProtocol/aztec-packages/commit/51d93eb3020ea8f8902c814d0f8dd74640535a90))
+* Fix negative tests in AVM circuit for context input lookups ([#7261](https://github.com/AztecProtocol/aztec-packages/issues/7261)) ([ad2f654](https://github.com/AztecProtocol/aztec-packages/commit/ad2f654eb2589dff118c3e104c4f91825ee7f739))
+* Fixing all relative paths (https://github.com/noir-lang/noir/pull/5220) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Generate PIL constants from via constants gen ([#7258](https://github.com/AztecProtocol/aztec-packages/issues/7258)) ([244ef7e](https://github.com/AztecProtocol/aztec-packages/commit/244ef7e5a6871443444df88c28a1c2a7430d6db1))
+* Gets rid of unencrypted emit in private_context ([#7236](https://github.com/AztecProtocol/aztec-packages/issues/7236)) ([3e6d88e](https://github.com/AztecProtocol/aztec-packages/commit/3e6d88e53c3e4c0777e152393d5310b5607baa0a))
+* Improve authwit comments/docs ([#7180](https://github.com/AztecProtocol/aztec-packages/issues/7180)) ([051ab9e](https://github.com/AztecProtocol/aztec-packages/commit/051ab9e3d4eda170c775f683762c81b6876c61ca))
+* Misc cleanup in simulator ([#7203](https://github.com/AztecProtocol/aztec-packages/issues/7203)) ([eb00830](https://github.com/AztecProtocol/aztec-packages/commit/eb00830fce7afae60447bec5383349d7f490e4d7))
+* Optimize the elaborator (https://github.com/noir-lang/noir/pull/5230) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Parse macros (https://github.com/noir-lang/noir/pull/5229) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Pedersen commitment in Noir (https://github.com/noir-lang/noir/pull/5221) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Pedersen hash in Noir (https://github.com/noir-lang/noir/pull/5217) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Private tail circuits ([#7148](https://github.com/AztecProtocol/aztec-packages/issues/7148)) ([9e67e7d](https://github.com/AztecProtocol/aztec-packages/commit/9e67e7d8c47004763df8fdbee9f278a75db193a0))
+* Pull out change to expression splitting from sync PR ([#7215](https://github.com/AztecProtocol/aztec-packages/issues/7215)) ([b4f50a5](https://github.com/AztecProtocol/aztec-packages/commit/b4f50a5bf03babd83c1f467d2792b50e334bf5a7))
+* Pull out foreign call nested array changes ([#7216](https://github.com/AztecProtocol/aztec-packages/issues/7216)) ([1faaaf5](https://github.com/AztecProtocol/aztec-packages/commit/1faaaf53bb7461d1806a79822ded1ecefe01b59b))
+* Pull out noir-lang/noir[#5120](https://github.com/AztecProtocol/aztec-packages/issues/5120) ([#7205](https://github.com/AztecProtocol/aztec-packages/issues/7205)) ([c5dc094](https://github.com/AztecProtocol/aztec-packages/commit/c5dc0946f4d300df5c6a70026e102de8e69f020b))
+* Pull out pedersen generator builtin from sync PR ([#7210](https://github.com/AztecProtocol/aztec-packages/issues/7210)) ([412f02e](https://github.com/AztecProtocol/aztec-packages/commit/412f02eb05321db1bbc60902e31ab50d743541d6))
+* Pull out SSA changes from sync PR ([#7209](https://github.com/AztecProtocol/aztec-packages/issues/7209)) ([141e137](https://github.com/AztecProtocol/aztec-packages/commit/141e137b06b7f9aa324705e716aac2157312aacb))
+* Push code related to ABI gen into `noirc_driver` (https://github.com/noir-lang/noir/pull/5218) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Redo typo PR by dropbigfish (https://github.com/noir-lang/noir/pull/5234) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Reduce note and nullifier constants ([#7255](https://github.com/AztecProtocol/aztec-packages/issues/7255)) ([4637304](https://github.com/AztecProtocol/aztec-packages/commit/463730458de2397d66ec90fedfeee61700c426a4))
+* Refactor test case generation in build.rs (https://github.com/noir-lang/noir/pull/5280) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Refactor to use `mod.nr` support ([#7259](https://github.com/AztecProtocol/aztec-packages/issues/7259)) ([cda45db](https://github.com/AztecProtocol/aztec-packages/commit/cda45dba624e519ace66fd2e75b85d29a0f6eb9f))
+* Release Noir(0.31.0) (https://github.com/noir-lang/noir/pull/5166) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Remove `is_unconstrained_fn` field from elaborator (https://github.com/noir-lang/noir/pull/5335) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Remove 4738 ref ([#7254](https://github.com/AztecProtocol/aztec-packages/issues/7254)) ([97d997c](https://github.com/AztecProtocol/aztec-packages/commit/97d997c851fe319f864e2826903ffa7d8677d701))
+* Remove a log file ([#7201](https://github.com/AztecProtocol/aztec-packages/issues/7201)) ([83bb218](https://github.com/AztecProtocol/aztec-packages/commit/83bb2180cfacd33298b5b3346140453566f3cf8e))
+* Remove commented code ([#7231](https://github.com/AztecProtocol/aztec-packages/issues/7231)) ([2740d60](https://github.com/AztecProtocol/aztec-packages/commit/2740d600c0d4a18ce90df24e334e572a80233832))
+* Remove panic for unimplemented trait dispatch (https://github.com/noir-lang/noir/pull/5329) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Replace `is_bn254` implementation to not rely on truncation of literals (https://github.com/noir-lang/noir/pull/5247) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Replace `regression_5202` with more manageably sized program (https://github.com/noir-lang/noir/pull/5345) ([eb9e9f6](https://github.com/AztecProtocol/aztec-packages/commit/eb9e9f6f2b3952760822faaacb7e851e936e0800))
+* Replace cached `in_contract` with `in_contract()` method (https://github.com/noir-lang/noir/pull/5324) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Replace logical operators with bitwise in `DebugToString` (https://github.com/noir-lang/noir/pull/5236) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Replace relative paths to noir-protocol-circuits ([e83b07b](https://github.com/AztecProtocol/aztec-packages/commit/e83b07bf813001c144c61c61174c6adf816cc991))
+* Replace relative paths to noir-protocol-circuits ([eca8587](https://github.com/AztecProtocol/aztec-packages/commit/eca858775f8f84455cc0a20d9f9fb828cf342b68))
+* Replace relative paths to noir-protocol-circuits ([b9ddf43](https://github.com/AztecProtocol/aztec-packages/commit/b9ddf43faa0184692917d543e39507192b2ac64b))
+* Replace relative paths to noir-protocol-circuits ([6f817e8](https://github.com/AztecProtocol/aztec-packages/commit/6f817e86b61aea78d9f4132ecf4c3ed2f96b4e5c))
+* Replace relative paths to noir-protocol-circuits ([f9bf0a4](https://github.com/AztecProtocol/aztec-packages/commit/f9bf0a4d8ea7591abbb092f1a44b3ff6bcab7af7))
+* Replicate noir-lang/noir[#4946](https://github.com/AztecProtocol/aztec-packages/issues/4946) ([#7202](https://github.com/AztecProtocol/aztec-packages/issues/7202)) ([b5c07d8](https://github.com/AztecProtocol/aztec-packages/commit/b5c07d8507c783ebb440cb32a897416627b71ec1))
+* Simplify compilation flow to write to file immediately (https://github.com/noir-lang/noir/pull/5265) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Split off fuzzer, abi changes and `noirc_artifacts` from sync ([#7208](https://github.com/AztecProtocol/aztec-packages/issues/7208)) ([255d752](https://github.com/AztecProtocol/aztec-packages/commit/255d752594dd5372c75934a784e995ae4899e431))
+* Thread generics through ACIR/brillig gen (https://github.com/noir-lang/noir/pull/5120) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+* Use `push_err` more in elaborator (https://github.com/noir-lang/noir/pull/5336) ([f2abb4e](https://github.com/AztecProtocol/aztec-packages/commit/f2abb4e9deb05437666db9c27cd0d49c2ec9ac3d))
+* Use options.limit as upper limit for note-getter loop ([#7253](https://github.com/AztecProtocol/aztec-packages/issues/7253)) ([8ff669b](https://github.com/AztecProtocol/aztec-packages/commit/8ff669b63f302447e099dc52dea248c2ca914043))
+* Use prefix op_ for every instruction in avm_trace.hpp ([#7214](https://github.com/AztecProtocol/aztec-packages/issues/7214)) ([7ed7558](https://github.com/AztecProtocol/aztec-packages/commit/7ed75586cd5deb8aff3730a80cb29c642495bbff))
+* Use the elaborator by default (https://github.com/noir-lang/noir/pull/5246) ([ed815a3](https://github.com/AztecProtocol/aztec-packages/commit/ed815a3713fc311056a8bd0a616945f12d9be2a8))
+
 ## [0.44.0](https://github.com/AztecProtocol/aztec-packages/compare/aztec-packages-v0.43.0...aztec-packages-v0.44.0) (2024-06-26)
 
 

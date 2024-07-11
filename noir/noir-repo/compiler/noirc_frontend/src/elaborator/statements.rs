@@ -16,7 +16,7 @@ use crate::{
     macros_api::{
         ForLoopStatement, ForRange, HirStatement, LetStatement, Path, Statement, StatementKind,
     },
-    node_interner::{DefinitionId, DefinitionKind, GlobalId, StmtId},
+    node_interner::{DefinitionId, DefinitionKind, GlobalId, ReferenceId, StmtId},
     Type,
 };
 
@@ -86,8 +86,8 @@ impl<'context> Elaborator<'context> {
                     expr_span,
                 }
             });
-            if annotated_type.is_unsigned() {
-                let errors = lints::overflowing_uint(self.interner, &expression, &annotated_type);
+            if annotated_type.is_integer() {
+                let errors = lints::overflowing_int(self.interner, &expression, &annotated_type);
                 for error in errors {
                     self.push_err(error);
                 }
@@ -206,9 +206,8 @@ impl<'context> Elaborator<'context> {
     }
 
     fn elaborate_jump(&mut self, is_break: bool, span: noirc_errors::Span) -> (HirStatement, Type) {
-        let in_constrained_function = self
-            .current_function
-            .map_or(true, |func_id| !self.interner.function_modifiers(&func_id).is_unconstrained);
+        let in_constrained_function = self.in_constrained_function();
+
         if in_constrained_function {
             self.push_err(ResolverError::JumpInConstrainedFn { is_break, span });
         }
@@ -256,6 +255,10 @@ impl<'context> Elaborator<'context> {
                     let typ = self.interner.definition_type(ident.id).instantiate(self.interner).0;
                     typ.follow_bindings()
                 };
+
+                let referenced = ReferenceId::Local(ident.id);
+                let reference = ReferenceId::Reference(Location::new(span, self.file), false);
+                self.interner.add_reference(referenced, reference);
 
                 (HirLValue::Ident(ident.clone(), typ.clone()), typ, mutable)
             }
@@ -433,8 +436,15 @@ impl<'context> Elaborator<'context> {
     }
 
     fn elaborate_comptime_statement(&mut self, statement: Statement) -> (HirStatement, Type) {
+        // We have to push a new FunctionContext so that we can resolve any constraints
+        // in this comptime block early before the function as a whole finishes elaborating.
+        // Otherwise the interpreter below may find expressions for which the underlying trait
+        // call is not yet solved for.
+        self.function_context.push(Default::default());
         let span = statement.span;
         let (hir_statement, _typ) = self.elaborate_statement(statement);
+        self.check_and_pop_function_context();
+
         let mut interpreter =
             Interpreter::new(self.interner, &mut self.comptime_scopes, self.crate_id);
         let value = interpreter.evaluate_statement(hir_statement);

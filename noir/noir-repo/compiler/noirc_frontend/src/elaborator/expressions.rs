@@ -27,9 +27,9 @@ use crate::{
         HirLiteral, HirStatement, Ident, IndexExpression, Literal, MemberAccessExpression,
         MethodCallExpression, PrefixExpression,
     },
-    node_interner::{DefinitionKind, ExprId, FuncId},
+    node_interner::{DefinitionKind, ExprId, FuncId, ReferenceId},
     token::Tokens,
-    Kind, QuotedType, Shared, StructType, Type,
+    QuotedType, Shared, StructType, Type,
 };
 
 use super::Elaborator;
@@ -51,23 +51,7 @@ impl<'context> Elaborator<'context> {
             ExpressionKind::Infix(infix) => return self.elaborate_infix(*infix, expr.span),
             ExpressionKind::If(if_) => self.elaborate_if(*if_),
             ExpressionKind::Variable(variable, generics) => {
-                let generics = generics.map(|option_inner| {
-                    option_inner
-                        .into_iter()
-                        .map(|generic| {
-                            // All type expressions should resolve to a `Type::Constant`
-                            if generic.is_type_expression() {
-                                self.resolve_type_inner(
-                                    generic,
-                                    &Kind::Numeric(Box::new(Type::default_int_type())),
-                                )
-                            } else {
-                                self.resolve_type(generic)
-                            }
-                        })
-                        .collect()
-                });
-                return self.elaborate_variable(variable, generics);
+                return self.elaborate_variable(variable, generics)
             }
             ExpressionKind::Tuple(tuple) => self.elaborate_tuple(tuple),
             ExpressionKind::Lambda(lambda) => self.elaborate_lambda(*lambda),
@@ -342,14 +326,18 @@ impl<'context> Elaborator<'context> {
                     }
                 };
 
-                if func_id != FuncId::dummy_id() {
+                let generics = if func_id != FuncId::dummy_id() {
                     let function_type = self.interner.function_meta(&func_id).typ.clone();
                     self.try_add_mutable_reference_to_object(
                         &function_type,
                         &mut object_type,
                         &mut object,
                     );
-                }
+
+                    self.resolve_turbofish_generics(&func_id, method_call.generics, span)
+                } else {
+                    None
+                };
 
                 // These arguments will be given to the desugared function call.
                 // Compared to the method arguments, they also contain the object.
@@ -367,9 +355,6 @@ impl<'context> Elaborator<'context> {
 
                 let location = Location::new(span, self.file);
                 let method = method_call.method_name;
-                let generics = method_call.generics.map(|option_inner| {
-                    option_inner.into_iter().map(|generic| self.resolve_type(generic)).collect()
-                });
                 let turbofish_generics = generics.clone();
                 let method_call =
                     HirMethodCallExpression { method, object, arguments, location, generics };
@@ -403,6 +388,7 @@ impl<'context> Elaborator<'context> {
         constructor: ConstructorExpression,
     ) -> (HirExpression, Type) {
         let span = constructor.type_name.span();
+        let is_self_type = constructor.type_name.last_segment().is_self_type_name();
 
         let (r#type, struct_generics) = if let Some(struct_id) = constructor.struct_type {
             let typ = self.interner.get_struct(struct_id);
@@ -431,6 +417,11 @@ impl<'context> Elaborator<'context> {
             r#type,
             struct_generics,
         });
+
+        let referenced = ReferenceId::Struct(struct_type.borrow().id);
+        let reference = ReferenceId::Reference(Location::new(span, self.file), is_self_type);
+        self.interner.add_reference(referenced, reference);
+
         (expr, Type::Struct(struct_type, generics))
     }
 
@@ -547,7 +538,7 @@ impl<'context> Elaborator<'context> {
                         trait_id: trait_id.trait_id,
                         trait_generics: Vec::new(),
                     };
-                    self.trait_constraints.push((constraint, expr_id));
+                    self.push_trait_constraint(constraint, expr_id);
                     self.type_check_operator_method(expr_id, trait_id, &lhs_type, span);
                 }
                 typ
@@ -663,7 +654,14 @@ impl<'context> Elaborator<'context> {
     }
 
     fn elaborate_comptime_block(&mut self, block: BlockExpression, span: Span) -> (ExprId, Type) {
+        // We have to push a new FunctionContext so that we can resolve any constraints
+        // in this comptime block early before the function as a whole finishes elaborating.
+        // Otherwise the interpreter below may find expressions for which the underlying trait
+        // call is not yet solved for.
+        self.function_context.push(Default::default());
         let (block, _typ) = self.elaborate_block_expression(block);
+        self.check_and_pop_function_context();
+
         let mut interpreter =
             Interpreter::new(self.interner, &mut self.comptime_scopes, self.crate_id);
         let value = interpreter.evaluate_block(block);
