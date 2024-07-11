@@ -85,6 +85,10 @@ template <typename FF_> class kernelImpl {
     static constexpr std::array<size_t, 10> SUBRELATION_PARTIAL_LENGTHS{
         3, 3, 4, 4, 3, 3, 3, 3, 3, 3,
     };
+    static constexpr std::array<size_t, 10> SUBRELATION_WITNESS_DEGREES{
+        2, 2, 3, 3, 2, 2, 2, 2, 2, 2,
+    };
+    static constexpr std::array<size_t, 10> ZK_SUBRELATION_PARTIAL_LENGTHS{ 5, 5, 7, 7, 5, 5, 5, 5, 5, 5 };
 
     template <typename ContainerOverSubrelations, typename AllEntities>
     void static accumulate(ContainerOverSubrelations& evals,

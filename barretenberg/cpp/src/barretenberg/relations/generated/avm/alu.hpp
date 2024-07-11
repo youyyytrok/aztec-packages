@@ -284,6 +284,24 @@ template <typename FF_> class aluImpl {
         3, 4, 3, 6, 5, 3, 3, 3, 3, 4, 3, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 2, 5, 3, 3, 4, 4, 4, 4,
         4, 3, 5, 5, 4, 5, 5, 2, 3, 3, 3, 3, 3, 4, 4, 3, 5, 3, 3, 3, 5, 3, 3, 4, 4, 4, 4, 4, 4,
     };
+    /**
+     * @brief Upper bound on total degrees of sub-relations considered as polynomials in witnesses.
+     *
+     */
+    static constexpr std::array<size_t, 87> SUBRELATION_WITNESS_DEGREES{
+        1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 7, 2, 3, 3, 4, 3, 3, 2, 3, 2,
+        2, 3, 2, 5, 4, 2, 2, 2, 2, 3, 2, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 1, 4, 2, 2, 3, 3, 3, 3,
+        3, 2, 4, 4, 3, 4, 4, 1, 2, 2, 2, 2, 2, 3, 3, 2, 4, 2, 2, 2, 4, 2, 2, 3, 3, 3, 3, 3, 3,
+    };
+    /**
+     * @brief Upper bound on sub-relation partial lengths used in ZK-Sumcheck
+     *
+     */
+    static constexpr std::array<size_t, 87> ZK_SUBRELATION_PARTIAL_LENGTHS{
+        3, 3, 3, 5,  5, 5, 5, 5, 5, 5, 5, 5, 7, 9, 9, 9, 9, 11, 11, 15, 5, 7, 7, 9, 7, 7, 5, 7, 5,
+        5, 7, 5, 11, 9, 5, 5, 5, 5, 7, 5, 7, 7, 5, 5, 5, 5, 5,  5,  5,  5, 3, 9, 5, 5, 7, 7, 7, 7,
+        7, 5, 9, 9,  7, 9, 9, 3, 5, 5, 5, 5, 5, 7, 7, 5, 9, 5,  5,  5,  9, 5, 5, 7, 7, 7, 7, 7, 7,
+    };
 
     template <typename ContainerOverSubrelations, typename AllEntities>
     void static accumulate(ContainerOverSubrelations& evals,

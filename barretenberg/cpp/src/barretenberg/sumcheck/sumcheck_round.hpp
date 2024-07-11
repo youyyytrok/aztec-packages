@@ -547,43 +547,6 @@ template <typename Flavor> class SumcheckVerifierRound {
     };
 
     /**
-     * @brief In the case of ZK-Flavors, the total sum is corrected by the contribution from Libra multivariate
-     polynomial's sum over the Boolean hypercube. More explicitly, the verifier submits the product of the Libra
-     challenge and the claimed Libra sum as an input to this method and defines \f{align}{ \texttt{target_total_sum}
-     \gets \texttt{target_total_sum} + \texttt{libra_challenge} \cdot \texttt{libra_sum} \f}, and compares it to the sum
-     of the evaluations of the first round univariate at \f$ 0 \f$ and \f$0\f$.
-
-     * @param univariate First round univariate \f$\tilde{S}^{0}\f$ represented by its evaluations over
-     \f$0,\ldots,D\f$.
-     *
-     */
-    bool check_first_sum_zk(SumcheckRoundUnivariate univariate, const FF correcting_term)
-    {
-        FF total_sum = univariate.value_at(0) + univariate.value_at(1);
-
-        target_total_sum = target_total_sum + correcting_term;
-        // TODO(#673): Conditionals like this can go away once native verification is is just recursive verification
-        // with a simulated builder.
-        bool sumcheck_round_failed(false);
-        if constexpr (IsRecursiveFlavor<Flavor>) {
-            if constexpr (IsECCVMRecursiveFlavor<Flavor>) {
-                // https://github.com/AztecProtocol/barretenberg/issues/998): Avoids the scenario where the assert_equal
-                // below fails because we are comparing a constant against a non-constant value and the non-constant
-                // value is in relaxed form. This happens at the first round when target_total_sum is initially set to
-                // 0.
-                total_sum.self_reduce();
-            }
-            target_total_sum.assert_equal(total_sum);
-            sumcheck_round_failed = (target_total_sum.get_value() != total_sum.get_value());
-        } else {
-            sumcheck_round_failed = (target_total_sum != total_sum);
-        }
-
-        round_failed = round_failed || sumcheck_round_failed;
-        return !sumcheck_round_failed;
-    };
-
-    /**
      * @brief Check that the round target sum is correct
      * @details The verifier receives the claimed evaluations of the round univariate \f$ \tilde{S}^i \f$ at \f$X_i =
      * 0,\ldots, D \f$ and checks \f$\sigma_i = \tilde{S}^{i-1}(u_{i-1}) \stackrel{?}{=} \tilde{S}^i(0) + \tilde{S}^i(1)
@@ -594,6 +557,7 @@ template <typename Flavor> class SumcheckVerifierRound {
     template <typename Builder>
     bool check_sum(bb::Univariate<FF, BATCHED_RELATION_PARTIAL_LENGTH>& univariate, stdlib::bool_t<Builder> dummy_round)
     {
+        info("total sum check inside non zk check", target_total_sum);
         FF total_sum =
             FF::conditional_assign(dummy_round, target_total_sum, univariate.value_at(0) + univariate.value_at(1));
         // TODO(#673): Conditionals like this can go away once native verification is is just recursive verification
@@ -613,6 +577,7 @@ template <typename Flavor> class SumcheckVerifierRound {
             }
         } else {
             sumcheck_round_failed = (target_total_sum != total_sum);
+            info("total sum check inside non zk check", target_total_sum);
         }
 
         round_failed = round_failed || sumcheck_round_failed;

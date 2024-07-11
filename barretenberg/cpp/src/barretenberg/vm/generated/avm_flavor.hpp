@@ -99,6 +99,8 @@ class AvmFlavor {
     using VerifierCommitmentKey = bb::VerifierCommitmentKey<Curve>;
     using RelationSeparator = FF;
 
+    static constexpr bool HasZK = false;
+
     static constexpr size_t NUM_PRECOMPUTED_ENTITIES = 2;
     static constexpr size_t NUM_WITNESS_ENTITIES = 385;
     static constexpr size_t NUM_WIRES = NUM_WITNESS_ENTITIES + NUM_PRECOMPUTED_ENTITIES;

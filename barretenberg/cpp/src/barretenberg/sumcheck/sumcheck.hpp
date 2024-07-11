@@ -268,19 +268,19 @@ template <typename Flavor> class SumcheckProver {
         // abort and start ZK-Sumcheck anew.
         if (Flavor::HasZK) {
             check_that_evals_do_not_leak_witness_data(multivariate_challenge);
-<<<<<<< HEAD
-        }
-        // The evaluations of Libra uninvariates at \f$ g_0(u_0), \ldots, g_{d-1} (u_{d-1}) \f$ are sent to the
-        // Verifier.
-        if constexpr (Flavor::HasZK) {
-            transcript->send_to_verifier("Libra:evaluations", zk_sumcheck_data.libra_evaluations);
         };
+
         auto zero_univariate = bb::Univariate<FF, Flavor::BATCHED_RELATION_PARTIAL_LENGTH>::zero();
         for (size_t idx = multivariate_d; idx < CONST_PROOF_SIZE_LOG_N; idx++) {
             transcript->send_to_verifier("Sumcheck:univariate_" + std::to_string(idx), zero_univariate);
             FF round_challenge = transcript->template get_challenge<FF>("Sumcheck:u_" + std::to_string(idx));
             multivariate_challenge.emplace_back(round_challenge);
         }
+        // The evaluations of Libra uninvariates at \f$ g_0(u_0), \ldots, g_{d-1} (u_{d-1}) \f$ are sent to the
+        // Verifier.
+        if constexpr (Flavor::HasZK) {
+            transcript->send_to_verifier("Libra:evaluations", zk_sumcheck_data.libra_evaluations);
+        };
 
         // Claimed evaluations of Prover polynomials are extracted and sent to the verifier. When Flavor has ZK, the
         // evaluations of all witnesses are masked.
@@ -292,406 +292,396 @@ template <typename Flavor> class SumcheckProver {
             extract_claimed_evaluations(partially_evaluated_polynomials, multivariate_evaluations);
         };
 =======
+    }
+    // The evaluations of Libra uninvariates at \f$ g_0(u_0), \ldots, g_{d-1} (u_{d-1}) \f$ are sent to the
+    // Verifier.
+    if constexpr (Flavor::HasZK) {
+        transcript->send_to_verifier("Libra:evaluations", zk_sumcheck_data.libra_evaluations);
+    };
+    // Claimed evaluations of Prover polynomials are extracted and sent to the verifier. When Flavor has ZK, the
+    // evaluations of all witnesses are masked.
+    ClaimedEvaluations multivariate_evaluations =
+        extract_claimed_evaluations(partially_evaluated_polynomials, zk_sumcheck_data.masking_terms_evaluations);
+>>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
+    transcript->send_to_verifier("Sumcheck:evaluations", multivariate_evaluations.get_all());
+    return SumcheckOutput<Flavor>{
+        multivariate_challenge, multivariate_evaluations
+    }; // seemingly also need to add libra_total_sum, libra_challenge and libra_evaluations to the output// NOT SURE
+};
+
+/**
+ *
+ @brief Evaluate Honk polynomials at the round challenge and prepare class for next round.
+ @details At initialization, \ref ProverPolynomials "Prover Polynomials"
+ are submitted by reference into \p full_polynomials, which is a two-dimensional array defined as \f{align}{
+\texttt{full_polynomials}_{i,j} = P_j(\vec i). \f} Here, \f$ \vec i \in \{0,1\}^d \f$ is identified with the binary
+representation of the integer \f$ 0 \leq i \leq 2^d-1 \f$.
+
+ * When the first challenge \f$ u_0 \f$ is computed, the method \ref partially_evaluate "partially evaluate" takes
+as input \p full_polynomials and populates  \ref partially_evaluated_polynomials "a new book-keeping table" denoted
+\f$\texttt{partially_evaluated_polynomials}\f$. Its \f$ n/2 = 2^{d-1} \f$ rows represent the evaluations  \f$
+P_i(u_0, X_1, ..., X_{d-1}) \f$, which are multilinear polynomials in \f$ d-1 \f$ variables.
+ * More precisely, it is a table  \f$ 2^{d-1} \f$ rows and \f$ N \f$ columns, such that
+\f{align}{ \texttt{partially_evaluated_polynomials}_{i,j} = &\ P_j(0, i_1,\ldots, i_{d-1}) + u_0 \cdot (P_j(1,
+i_1,\ldots, i_{d-1})) - P_j(0, i_1,\ldots, i_{d-1})) \\ = &\ \texttt{full_polynomials}_{2 i,j} + u_0 \cdot
+(\texttt{full_polynomials}_{2i+1,j} - \texttt{full_polynomials}_{2 i,j}) \f}
+ * We elude copying all of the polynomial-defining data by only populating \ref partially_evaluated_polynomials
+after the first round.
+
+ * In Round \f$0<i\leq d-1\f$, this method takes the challenge \f$ u_{i} \f$ and rewrites the first \f$ 2^{d-i-1}
+\f$ rows in the \f$ \texttt{partially_evaluated_polynomials} \f$ table with the values
+ * \f{align}{
+    \texttt{partially_evaluated_polynomials}_{\ell,j} \gets &\
+     P_j\left(u_0,\ldots, u_{i}, \vec \ell \right)    \\
+   = &\ P_j\left(u_0,\ldots, u_{i-1}, 0,  \vec \ell \right) + u_{i} \cdot \left( P_j\left(u_0, \ldots, u_{i-1}, 1,
+\vec \ell ) - P_j(u_0,\ldots, u_{i-1}, 0,  \vec \ell \right)\right)  \\ =
+&\ \texttt{partially_evaluated_polynomials}_{2 \ell,j}  + u_{i} \cdot (\texttt{partially_evaluated_polynomials}_{2
+\ell+1,j} - \texttt{partially_evaluated_polynomials}_{2\ell,j}) \f} where \f$\vec \ell \in \{0,1\}^{d-1-i}\f$.
+ * After the final update, i.e. when \f$ i = d-1 \f$, the upper row of the table contains the evaluations of Honk
+ * polynomials at the challenge point \f$ (u_0,\ldots, u_{d-1}) \f$.
+ * @param polynomials Honk polynomials at initialization; partially evaluated polynomials in subsequent rounds
+ * @param round_size \f$2^{d-i}\f$
+ * @param round_challenge \f$u_i\f$
+ */
+void partially_evaluate(auto& polynomials, size_t round_size, FF round_challenge)
+{
+
+    auto pep_view = partially_evaluated_polynomials.get_all();
+    auto poly_view = polynomials.get_all();
+    // after the first round, operate in place on partially_evaluated_polynomials
+    parallel_for(poly_view.size(), [&](size_t j) {
+        for (size_t i = 0; i < round_size; i += 2) {
+            pep_view[j][i >> 1] = poly_view[j][i] + round_challenge * (poly_view[j][i + 1] - poly_view[j][i]);
         }
-        // The evaluations of Libra uninvariates at \f$ g_0(u_0), \ldots, g_{d-1} (u_{d-1}) \f$ are sent to the
-        // Verifier.
-        if constexpr (Flavor::HasZK) {
-            transcript->send_to_verifier("Libra:evaluations", zk_sumcheck_data.libra_evaluations);
-        };
-        // Claimed evaluations of Prover polynomials are extracted and sent to the verifier. When Flavor has ZK, the
-        // evaluations of all witnesses are masked.
-        ClaimedEvaluations multivariate_evaluations =
-            extract_claimed_evaluations(partially_evaluated_polynomials, zk_sumcheck_data.masking_terms_evaluations);
->>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
-        transcript->send_to_verifier("Sumcheck:evaluations", multivariate_evaluations.get_all());
-        return SumcheckOutput<Flavor>{
-            multivariate_challenge, multivariate_evaluations
-        }; // seemingly also need to add libra_total_sum, libra_challenge and libra_evaluations to the output// NOT SURE
-    };
-
-    /**
-     *
-     @brief Evaluate Honk polynomials at the round challenge and prepare class for next round.
-     @details At initialization, \ref ProverPolynomials "Prover Polynomials"
-     are submitted by reference into \p full_polynomials, which is a two-dimensional array defined as \f{align}{
-    \texttt{full_polynomials}_{i,j} = P_j(\vec i). \f} Here, \f$ \vec i \in \{0,1\}^d \f$ is identified with the binary
-    representation of the integer \f$ 0 \leq i \leq 2^d-1 \f$.
-
-     * When the first challenge \f$ u_0 \f$ is computed, the method \ref partially_evaluate "partially evaluate" takes
-    as input \p full_polynomials and populates  \ref partially_evaluated_polynomials "a new book-keeping table" denoted
-    \f$\texttt{partially_evaluated_polynomials}\f$. Its \f$ n/2 = 2^{d-1} \f$ rows represent the evaluations  \f$
-    P_i(u_0, X_1, ..., X_{d-1}) \f$, which are multilinear polynomials in \f$ d-1 \f$ variables.
-     * More precisely, it is a table  \f$ 2^{d-1} \f$ rows and \f$ N \f$ columns, such that
-    \f{align}{ \texttt{partially_evaluated_polynomials}_{i,j} = &\ P_j(0, i_1,\ldots, i_{d-1}) + u_0 \cdot (P_j(1,
-    i_1,\ldots, i_{d-1})) - P_j(0, i_1,\ldots, i_{d-1})) \\ = &\ \texttt{full_polynomials}_{2 i,j} + u_0 \cdot
-    (\texttt{full_polynomials}_{2i+1,j} - \texttt{full_polynomials}_{2 i,j}) \f}
-     * We elude copying all of the polynomial-defining data by only populating \ref partially_evaluated_polynomials
-    after the first round.
-
-     * In Round \f$0<i\leq d-1\f$, this method takes the challenge \f$ u_{i} \f$ and rewrites the first \f$ 2^{d-i-1}
-    \f$ rows in the \f$ \texttt{partially_evaluated_polynomials} \f$ table with the values
-     * \f{align}{
-        \texttt{partially_evaluated_polynomials}_{\ell,j} \gets &\
-         P_j\left(u_0,\ldots, u_{i}, \vec \ell \right)    \\
-       = &\ P_j\left(u_0,\ldots, u_{i-1}, 0,  \vec \ell \right) + u_{i} \cdot \left( P_j\left(u_0, \ldots, u_{i-1}, 1,
-    \vec \ell ) - P_j(u_0,\ldots, u_{i-1}, 0,  \vec \ell \right)\right)  \\ =
-    &\ \texttt{partially_evaluated_polynomials}_{2 \ell,j}  + u_{i} \cdot (\texttt{partially_evaluated_polynomials}_{2
-    \ell+1,j} - \texttt{partially_evaluated_polynomials}_{2\ell,j}) \f} where \f$\vec \ell \in \{0,1\}^{d-1-i}\f$.
-     * After the final update, i.e. when \f$ i = d-1 \f$, the upper row of the table contains the evaluations of Honk
-     * polynomials at the challenge point \f$ (u_0,\ldots, u_{d-1}) \f$.
-     * @param polynomials Honk polynomials at initialization; partially evaluated polynomials in subsequent rounds
-     * @param round_size \f$2^{d-i}\f$
-     * @param round_challenge \f$u_i\f$
-     */
-    void partially_evaluate(auto& polynomials, size_t round_size, FF round_challenge)
-    {
-
-        auto pep_view = partially_evaluated_polynomials.get_all();
-        auto poly_view = polynomials.get_all();
-        // after the first round, operate in place on partially_evaluated_polynomials
-        parallel_for(poly_view.size(), [&](size_t j) {
-            for (size_t i = 0; i < round_size; i += 2) {
-                pep_view[j][i >> 1] = poly_view[j][i] + round_challenge * (poly_view[j][i + 1] - poly_view[j][i]);
-            }
-        });
-    };
-    /**
-     * @brief Evaluate at the round challenge and prepare class for next round.
-     * Specialization for array, see \ref bb::SumcheckProver<Flavor>::partially_evaluate "generic version".
-     */
-    template <typename PolynomialT, std::size_t N>
-    void partially_evaluate(std::array<PolynomialT, N>& polynomials, size_t round_size, FF round_challenge)
-    {
-        auto pep_view = partially_evaluated_polynomials.get_all();
-        // after the first round, operate in place on partially_evaluated_polynomials
-        parallel_for(polynomials.size(), [&](size_t j) {
-            for (size_t i = 0; i < round_size; i += 2) {
-                pep_view[j][i >> 1] = polynomials[j][i] + round_challenge * (polynomials[j][i + 1] - polynomials[j][i]);
-            }
-        });
-    };
+    });
+};
+/**
+ * @brief Evaluate at the round challenge and prepare class for next round.
+ * Specialization for array, see \ref bb::SumcheckProver<Flavor>::partially_evaluate "generic version".
+ */
+template <typename PolynomialT, std::size_t N>
+void partially_evaluate(std::array<PolynomialT, N>& polynomials, size_t round_size, FF round_challenge)
+{
+    auto pep_view = partially_evaluated_polynomials.get_all();
+    // after the first round, operate in place on partially_evaluated_polynomials
+    parallel_for(polynomials.size(), [&](size_t j) {
+        for (size_t i = 0; i < round_size; i += 2) {
+            pep_view[j][i >> 1] = polynomials[j][i] + round_challenge * (polynomials[j][i + 1] - polynomials[j][i]);
+        }
+    });
+};
 
 <<<<<<< HEAD
-    void extract_claimed_evaluations(PartiallyEvaluatedMultivariates partially_evaluated_polynomials,
-                                     ClaimedEvaluations& multivariate_evaluations)
-    {
-        // Extract claimed evaluations of all polynomials
-        for (auto [eval, poly] :
-             zip_view(multivariate_evaluations.get_all(), partially_evaluated_polynomials.get_all())) {
-            eval = poly[0];
-        };
+void extract_claimed_evaluations(PartiallyEvaluatedMultivariates partially_evaluated_polynomials,
+                                 ClaimedEvaluations& multivariate_evaluations)
+{
+    // Extract claimed evaluations of all polynomials
+    for (auto [eval, poly] : zip_view(multivariate_evaluations.get_all(), partially_evaluated_polynomials.get_all())) {
+        eval = poly[0];
     };
-    void extract_zk_claimed_evaluations(PartiallyEvaluatedMultivariates partially_evaluated_polynomials,
-                                        EvaluationMaskingTable masking_terms_evaluations,
-                                        ClaimedEvaluations& multivariate_evaluations)
-    {
-        // Extract claimed evaluations of non-witness polynomials
+};
+void extract_zk_claimed_evaluations(PartiallyEvaluatedMultivariates partially_evaluated_polynomials,
+                                    EvaluationMaskingTable masking_terms_evaluations,
+                                    ClaimedEvaluations& multivariate_evaluations)
+{
+    // Extract claimed evaluations of non-witness polynomials
 =======
-    static ClaimedEvaluations extract_claimed_evaluations(
-        PartiallyEvaluatedMultivariates partially_evaluated_polynomials,
-        std::optional<EvaluationMaskingTable> masking_terms_evaluations = std::nullopt)
-    {
-        // Extract claimed evaluations of non-witness polynomials
-        ClaimedEvaluations multivariate_evaluations;
+static ClaimedEvaluations extract_claimed_evaluations(
+    PartiallyEvaluatedMultivariates partially_evaluated_polynomials,
+    std::optional<EvaluationMaskingTable> masking_terms_evaluations = std::nullopt)
+{
+    // Extract claimed evaluations of non-witness polynomials
+    ClaimedEvaluations multivariate_evaluations;
 >>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
-        for (auto [eval, poly] : zip_view(multivariate_evaluations.get_non_witnesses(),
-                                          partially_evaluated_polynomials.get_non_witnesses())) {
-            eval = poly[0];
-        };
+    for (auto [eval, poly] :
+         zip_view(multivariate_evaluations.get_non_witnesses(), partially_evaluated_polynomials.get_non_witnesses())) {
+        eval = poly[0];
+    };
 <<<<<<< HEAD
-        // Extract claimed evaluations of all witness polynomials
+    // Extract claimed evaluations of all witness polynomials
+    for (auto [eval, poly, masking_term] : zip_view(multivariate_evaluations.get_all_witnesses(),
+                                                    partially_evaluated_polynomials.get_all_witnesses(),
+                                                    masking_terms_evaluations)) {
+        eval = poly[0] + masking_term.value_at(0);
+    }
+};
+
+=======
+    // Final round: Extract evaluations of witness polynomials: In the ZK case, add extra masking term to the
+    // witnesses.
+    if (Flavor::HasZK) {
         for (auto [eval, poly, masking_term] : zip_view(multivariate_evaluations.get_all_witnesses(),
                                                         partially_evaluated_polynomials.get_all_witnesses(),
-                                                        masking_terms_evaluations)) {
+                                                        masking_terms_evaluations.value())) {
             eval = poly[0] + masking_term.value_at(0);
         }
-    };
-
-=======
-        // Final round: Extract evaluations of witness polynomials: In the ZK case, add extra masking term to the
-        // witnesses.
-        if (Flavor::HasZK) {
-            for (auto [eval, poly, masking_term] : zip_view(multivariate_evaluations.get_all_witnesses(),
-                                                            partially_evaluated_polynomials.get_all_witnesses(),
-                                                            masking_terms_evaluations.value())) {
-                eval = poly[0] + masking_term.value_at(0);
-            }
-        } else {
-            for (auto [eval, poly] : zip_view(multivariate_evaluations.get_all_witnesses(),
-                                              partially_evaluated_polynomials.get_all_witnesses())) {
-                eval = poly[0];
-            };
-        }
-        return multivariate_evaluations;
-    };
+    } else {
+        for (auto [eval, poly] : zip_view(multivariate_evaluations.get_all_witnesses(),
+                                          partially_evaluated_polynomials.get_all_witnesses())) {
+            eval = poly[0];
+        };
+    }
+    return multivariate_evaluations;
+};
 >>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
-    /**
-     * @brief Create and populate the structure required for the ZK-sumcheck.
+/**
+ * @brief Create and populate the structure required for the ZK-sumcheck.
 
-     * @details This method creates an array of random field elements \f$ \rho_1,\ldots, \rho_{N_w}\f$ aimed to mask the
+ * @details This method creates an array of random field elements \f$ \rho_1,\ldots, \rho_{N_w}\f$ aimed to mask the
 evaluations of witness polynomials, these are contained in \f$ \texttt{eval_masking_array} \f$. In order to optimize the
 computation of Sumcheck Round Univariates, we populate a table of univariates \f$ \texttt{masking_terms_evaluations} \f$
 which at the beginning contains the evaluations of polynomials \f$ \rho_j \cdot (1-X)\cdot X \f$ at \f$ X = 0,\ldots,
 D\f$. The prover commits to each \f$ \rho_j \f$ as a multilinear polynomial in \f$ d \f$ variables.
 
 
-     * @param zk_sumcheck_data
-     */
-    void setup_zk_sumcheck_data(ZKSumcheckSetupData& zk_sumcheck_data)
-    {
+ * @param zk_sumcheck_data
+ */
+void setup_zk_sumcheck_data(ZKSumcheckSetupData& zk_sumcheck_data)
+{
 
-        EvalMaskingArray eval_masking_array;
+    EvalMaskingArray eval_masking_array;
 
-        for (size_t k = 0; k < NUM_ALL_WITNESSES; ++k) {
-            eval_masking_array[k] = FF::random_element();
-        };
-        // Generate random scalars \f$ \rho_1,\ldots, \rho_{N_w}\f$ to mask the evaluations of witness polynomials and
-        // populate the table masking_terms_evaluations with the terms \f$ \rho_j \cdot (1-k) \cdot k \f$
-        auto masking_terms_evaluations = create_evaluation_masking_table(eval_masking_array);
-        //  Generate random Libra Polynomials to mask Round Univariates.
+    for (size_t k = 0; k < NUM_ALL_WITNESSES; ++k) {
+        eval_masking_array[k] = FF::random_element();
+    };
+    // Generate random scalars \f$ \rho_1,\ldots, \rho_{N_w}\f$ to mask the evaluations of witness polynomials and
+    // populate the table masking_terms_evaluations with the terms \f$ \rho_j \cdot (1-k) \cdot k \f$
+    auto masking_terms_evaluations = create_evaluation_masking_table(eval_masking_array);
+    //  Generate random Libra Polynomials to mask Round Univariates.
 <<<<<<< HEAD
-        LibraUnivariates libra_univariates = generate_libra_univariates(multivariate_d);
-        // have to compute monomial coefficients of Libra univariates here
-        create_and_commit_to_libra_polynomials(libra_univariates);
+    LibraUnivariates libra_univariates = generate_libra_univariates(multivariate_d);
+    // have to compute monomial coefficients of Libra univariates here
+    create_and_commit_to_libra_polynomials(libra_univariates);
 
 =======
-        LibraUnivariates libra_univariates = generate_libra_polynomials(multivariate_d);
-        // have to commit to libra_univariates here
+    LibraUnivariates libra_univariates = generate_libra_polynomials(multivariate_d);
+    // have to commit to libra_univariates here
 >>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
-        auto libra_scaling_factor = FF(1);
-        FF libra_total_sum = compute_libra_total_sum(libra_univariates, libra_scaling_factor);
-        transcript->send_to_verifier("Libra:Sum", libra_total_sum); // take care of this in ultra transcript!
-        // get the challenge for the zk-sumcheck claim \sigma + \rho \cdot libra_total_sum
-        FF libra_challenge = transcript->template get_challenge<FF>("Libra:Challenge");
-        // Initialize Libra running sum by multiplpying it by Libra challenge \f$\rho\f$;
-        auto libra_running_sum = libra_total_sum * libra_challenge;
-        // Multiply the column-univariates of the array of libra polynomials by libra challenge and power of \f$ 2\f$,
-        // modify libra running_sum subtracting the contribution from the first univariate
-        setup_libra_data(libra_univariates, libra_scaling_factor, libra_challenge, libra_running_sum);
+    auto libra_scaling_factor = FF(1);
+    FF libra_total_sum = compute_libra_total_sum(libra_univariates, libra_scaling_factor);
+    transcript->send_to_verifier("Libra:Sum", libra_total_sum); // take care of this in ultra transcript!
+    // get the challenge for the zk-sumcheck claim \sigma + \rho \cdot libra_total_sum
+    FF libra_challenge = transcript->template get_challenge<FF>("Libra:Challenge");
+    // Initialize Libra running sum by multiplpying it by Libra challenge \f$\rho\f$;
+    auto libra_running_sum = libra_total_sum * libra_challenge;
+    // Multiply the column-univariates of the array of libra polynomials by libra challenge and power of \f$ 2\f$,
+    // modify libra running_sum subtracting the contribution from the first univariate
+    setup_libra_data(libra_univariates, libra_scaling_factor, libra_challenge, libra_running_sum);
 
-        std::vector<FF> libra_evaluations;
-        libra_evaluations.reserve(multivariate_d);
+    std::vector<FF> libra_evaluations;
+    libra_evaluations.reserve(multivariate_d);
 
-        zk_sumcheck_data.eval_masking_array = eval_masking_array;
-        zk_sumcheck_data.masking_terms_evaluations = masking_terms_evaluations;
-        zk_sumcheck_data.libra_univariates = libra_univariates;
-        zk_sumcheck_data.libra_scaling_factor = libra_scaling_factor;
-        zk_sumcheck_data.libra_challenge = libra_challenge;
-        zk_sumcheck_data.libra_running_sum = libra_running_sum;
-        zk_sumcheck_data.libra_evaluations = libra_evaluations;
-    };
+    zk_sumcheck_data.eval_masking_array = eval_masking_array;
+    zk_sumcheck_data.masking_terms_evaluations = masking_terms_evaluations;
+    zk_sumcheck_data.libra_univariates = libra_univariates;
+    zk_sumcheck_data.libra_scaling_factor = libra_scaling_factor;
+    zk_sumcheck_data.libra_challenge = libra_challenge;
+    zk_sumcheck_data.libra_running_sum = libra_running_sum;
+    zk_sumcheck_data.libra_evaluations = libra_evaluations;
+};
 
-    /**
-     * @brief Given number of univariate polynomials and the number of their evaluations meant to be hidden, this method
-     * produces a vector of univariate polynomials of degree \ref ZK_BATCHED_LENGTH "ZK_BATCHED_LENGTH - 1" with
-     * independent uniformly random coefficients.
-     *
-     * @param number_of_polynomials
-     * @param num_evaluations
-     * @return std::vector<Polynomial>
-     */
+/**
+ * @brief Given number of univariate polynomials and the number of their evaluations meant to be hidden, this method
+ * produces a vector of univariate polynomials of degree \ref ZK_BATCHED_LENGTH "ZK_BATCHED_LENGTH - 1" with
+ * independent uniformly random coefficients.
+ *
+ * @param number_of_polynomials
+ * @param num_evaluations
+ * @return std::vector<Polynomial>
+ */
 <<<<<<< HEAD
-    static LibraUnivariates generate_libra_univariates(size_t number_of_polynomials)
+static LibraUnivariates generate_libra_univariates(size_t number_of_polynomials)
 =======
-    static LibraUnivariates generate_libra_polynomials(size_t number_of_polynomials)
+static LibraUnivariates generate_libra_polynomials(size_t number_of_polynomials)
 >>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
-    {
-        LibraUnivariates libra_full_polynomials;
-        for (size_t k = 0; k < number_of_polynomials; ++k) {
-            auto libra_polynomial = SumcheckRoundUnivariate::get_random(); // generate random polynomial of
-                                                                           // required size
-            libra_full_polynomials.emplace_back(libra_polynomial);         // place random polynomial into the vector
-        };
-
-        return libra_full_polynomials;
-    };
-    /**
-     * @brief Generate an array of random scalars of size equal to the number of all witness polynomials and populate a
-     * table of evaluations of the quadratic terms needed for masking evaluations of witnesses.
-     *
-     * @param evaluations
-     * @return std::array<FF, NUM_ALL_WITNESSES>
-     */
-    static EvaluationMaskingTable create_evaluation_masking_table(EvalMaskingArray eval_masking_array)
-    {
-        EvaluationMaskingTable output_table;
-        for (size_t column_idx = 0; column_idx < NUM_ALL_WITNESSES; ++column_idx) {
-            for (size_t row_idx = 0; row_idx < BATCHED_RELATION_PARTIAL_LENGTH; ++row_idx) {
-                auto scalar = FF(row_idx);
-                output_table[column_idx].value_at(row_idx) = scalar * (FF(1) - scalar) * eval_masking_array[column_idx];
-            };
-        };
-        return output_table;
+{
+    LibraUnivariates libra_full_polynomials;
+    for (size_t k = 0; k < number_of_polynomials; ++k) {
+        auto libra_polynomial = SumcheckRoundUnivariate::get_random(); // generate random polynomial of
+                                                                       // required size
+        libra_full_polynomials.emplace_back(libra_polynomial);         // place random polynomial into the vector
     };
 
-    /**
-     * @brief Update the table of masking quadratic terms by adding a contribution from a current challenge.
-     *
-     @details At initialization, \f$j\f$'th column of the masking terms evaluations table is a vector \f$(0, 0, \rho_2
-     \cdot 2, \ldots, \rho_j \cdot k (1-k), \ldots, \rho_j \cdot (D-1) (1-(D-1)))\f$. Upon getting current round
-     challenge, the prover adds the term \f$ \rho_j \cdot u_i \cdot (1-u_i)\f$ to each entry in the table.
-
-     It is useful at the stage of evaluating the relation \f$ \tilde{F} \f$ at the arguments given by the values of
-     \f$(\widehat{P}_1, \ldots, \widehat{P}_{N_w})\f$ at the points \f$u_0,\ldots, u_{i}, k, \vec \ell)\f$.
-     * @param evaluations
-     * @param masking_scalars
-     * @param round_challenge
-     */
-    void update_masking_terms_evaluations(ZKSumcheckSetupData& zk_sumcheck_data, FF round_challenge)
-    {
-        for (auto [masking_term, masking_scalar] :
-             zip_view(zk_sumcheck_data.masking_terms_evaluations, zk_sumcheck_data.eval_masking_array)) {
-            for (size_t k = 0; k < BATCHED_RELATION_PARTIAL_LENGTH; ++k) {
-                masking_term.value_at(k) += round_challenge * (FF(1) - round_challenge) * masking_scalar;
-            }
-        }
-    }
-    /**
-     * @brief Compute the sum of the randomly sampled multivariate polynomial \f$ G = \sum_{i=0}^{n-1} g_i(X_i) \f$ over
-     * the Boolean hypercube.
-     *
-     * @param libra_univariates
-     * @param scaling_factor
-     * @return FF
-     */
-    static FF compute_libra_total_sum(auto libra_univariates, FF& scaling_factor)
-    {
-        FF total_sum = 0;
-        scaling_factor = scaling_factor / 2;
-
-        for (auto univariate : libra_univariates) {
-            total_sum += univariate.value_at(0) + univariate.value_at(1);
-            scaling_factor *= 2;
-        }
-        total_sum *= scaling_factor;
-
-        return total_sum;
-    }
-    /**
-     * @brief Set up Libra book-keeping table that simplifies the computation of Libra Round Univariates
-     *
-     * @details The array of Libra univariates is getting scaled
-     * \f{align}{
-        \texttt{libra_univariates} \gets \texttt{libra_univariates}\cdot \rho \cdot 2^{d-1}
-     }
-     * We also initialize
-     * \f{align}{
-            \texttt{libra_running_sum} \gets \texttt{libra_total_sum} - \texttt{libra_univariates}_{0,0} -
-     \texttt{libra_univariates}_{0,1} \f}
-     * @param libra_table
-     * @param libra_round_factor
-     * @param libra_challenge
-     */
-    void setup_libra_data(auto& libra_univariates,
-                          FF& libra_scaling_factor,
-                          const FF libra_challenge,
-                          FF& libra_running_sum)
-    {
-        libra_scaling_factor *= libra_challenge; // \rho * 2^{d-1}
-        for (auto& univariate : libra_univariates) {
-            univariate *= libra_scaling_factor;
+    return libra_full_polynomials;
+};
+/**
+ * @brief Generate an array of random scalars of size equal to the number of all witness polynomials and populate a
+ * table of evaluations of the quadratic terms needed for masking evaluations of witnesses.
+ *
+ * @param evaluations
+ * @return std::array<FF, NUM_ALL_WITNESSES>
+ */
+static EvaluationMaskingTable create_evaluation_masking_table(EvalMaskingArray eval_masking_array)
+{
+    EvaluationMaskingTable output_table;
+    for (size_t column_idx = 0; column_idx < NUM_ALL_WITNESSES; ++column_idx) {
+        for (size_t row_idx = 0; row_idx < BATCHED_RELATION_PARTIAL_LENGTH; ++row_idx) {
+            auto scalar = FF(row_idx);
+            output_table[column_idx].value_at(row_idx) = scalar * (FF(1) - scalar) * eval_masking_array[column_idx];
         };
-        // subtract the contribution of the first libra univariate from libra total sum
-        libra_running_sum += -libra_univariates[0].value_at(0) - libra_univariates[0].value_at(1);
-        libra_running_sum *= FF(1) / FF(2);
-    }
+    };
+    return output_table;
+};
 
-<<<<<<< HEAD
-    bool create_and_commit_to_libra_polynomials(LibraUnivariates libra_univariates)
-    {
-        size_t number_of_polys = libra_univariates.size();
-        std::vector<FF> indices(BATCHED_RELATION_PARTIAL_LENGTH);
-        for (size_t idx = 0; idx < BATCHED_RELATION_PARTIAL_LENGTH; ++idx) {
-            indices[idx] = FF(idx);
-        };
-        std::span<FF> interpolation_points(indices);
-        using Polynomial = bb::Polynomial<FF>;
-        std::vector<Polynomial> libra_polynomials(number_of_polys);
+/**
+ * @brief Update the table of masking quadratic terms by adding a contribution from a current challenge.
+ *
+ @details At initialization, \f$j\f$'th column of the masking terms evaluations table is a vector \f$(0, 0, \rho_2
+ \cdot 2, \ldots, \rho_j \cdot k (1-k), \ldots, \rho_j \cdot (D-1) (1-(D-1)))\f$. Upon getting current round
+ challenge, the prover adds the term \f$ \rho_j \cdot u_i \cdot (1-u_i)\f$ to each entry in the table.
 
-        for (auto univariate : libra_univariates) {
-            info("Lagrange eval ", univariate.value_at(0));
-            info("Univariate size ", univariate.size());
-            FF coefficients[BATCHED_RELATION_PARTIAL_LENGTH];
-            // for (auto eval : univariate.evaluations.data()) {
-            //     info("eval uni ", eval);
-            // };
-            polynomial_arithmetic::compute_efficient_interpolation(univariate.evaluations.data(),
-                                                                   coefficients,
-                                                                   interpolation_points.data(),
-                                                                   BATCHED_RELATION_PARTIAL_LENGTH - 1);
-            // for (auto coefficient : coefficients) {
-            //     info("coeff ", coefficient);
-            // }
-            auto libra_polynomial = Polynomial(coefficients);
-            info("Monomial eval ", libra_polynomial.evaluate(FF(0)));
-            for (auto evaluation : univariate.evaluations) {
-                info(evaluation);
-            }
-            libra_polynomials.emplace_back(libra_polynomial);
+ It is useful at the stage of evaluating the relation \f$ \tilde{F} \f$ at the arguments given by the values of
+ \f$(\widehat{P}_1, \ldots, \widehat{P}_{N_w})\f$ at the points \f$u_0,\ldots, u_{i}, k, \vec \ell)\f$.
+ * @param evaluations
+ * @param masking_scalars
+ * @param round_challenge
+ */
+void update_masking_terms_evaluations(ZKSumcheckSetupData& zk_sumcheck_data, FF round_challenge)
+{
+    for (auto [masking_term, masking_scalar] :
+         zip_view(zk_sumcheck_data.masking_terms_evaluations, zk_sumcheck_data.eval_masking_array)) {
+        for (size_t k = 0; k < BATCHED_RELATION_PARTIAL_LENGTH; ++k) {
+            masking_term.value_at(k) += round_challenge * (FF(1) - round_challenge) * masking_scalar;
         }
-
-        return true;
     }
+}
+/**
+ * @brief Compute the sum of the randomly sampled multivariate polynomial \f$ G = \sum_{i=0}^{n-1} g_i(X_i) \f$ over
+ * the Boolean hypercube.
+ *
+ * @param libra_univariates
+ * @param scaling_factor
+ * @return FF
+ */
+static FF compute_libra_total_sum(auto libra_univariates, FF& scaling_factor)
+{
+    FF total_sum = 0;
+    scaling_factor = scaling_factor / 2;
+
+    for (auto univariate : libra_univariates) {
+        total_sum += univariate.value_at(0) + univariate.value_at(1);
+        scaling_factor *= 2;
+    }
+    total_sum *= scaling_factor;
+
+    return total_sum;
+}
+/**
+ * @brief Set up Libra book-keeping table that simplifies the computation of Libra Round Univariates
+ *
+ * @details The array of Libra univariates is getting scaled
+ * \f{align}{
+    \texttt{libra_univariates} \gets \texttt{libra_univariates}\cdot \rho \cdot 2^{d-1}
+ }
+ * We also initialize
+ * \f{align}{
+        \texttt{libra_running_sum} \gets \texttt{libra_total_sum} - \texttt{libra_univariates}_{0,0} -
+ \texttt{libra_univariates}_{0,1} \f}
+ * @param libra_table
+ * @param libra_round_factor
+ * @param libra_challenge
+ */
+void setup_libra_data(auto& libra_univariates,
+                      FF& libra_scaling_factor,
+                      const FF libra_challenge,
+                      FF& libra_running_sum)
+{
+    libra_scaling_factor *= libra_challenge; // \rho * 2^{d-1}
+    for (auto& univariate : libra_univariates) {
+        univariate *= libra_scaling_factor;
+    };
+    // subtract the contribution of the first libra univariate from libra total sum
+    libra_running_sum += -libra_univariates[0].value_at(0) - libra_univariates[0].value_at(1);
+    libra_running_sum *= FF(1) / FF(2);
+}
+/**
+ * @brief Create a and commit to libra polynomials object
+ * @details Libra univariates are represented by their evaluations over the domain \f$ (0,\ldots,
+ * \texttt{BATCHED_RELATION_PARTIAL_LENGTH} - 1)\f$. To commit to these polynomials, we compute their coefficients
+ * in the monomial basis using corresponding constructor from the Polynomial class. Since it is required to prove
+ * the evaluations of i-th Libra polynomial at i-th challenge, their coefficients in the monomial basis are becoming
+ * a part of the proving key.
+ * @param libra_univariates
+ * @return true
+ * @return false
+ */
+void create_and_commit_to_libra_polynomials(LibraUnivariates libra_univariates)
+{
+    size_t number_of_polys = libra_univariates.size();
+    std::vector<FF> indices(BATCHED_RELATION_PARTIAL_LENGTH);
+    for (size_t idx = 0; idx < BATCHED_RELATION_PARTIAL_LENGTH; ++idx) {
+        indices[idx] = FF(idx);
+    };
+    std::span<FF> interpolation_points(indices);
+    using Polynomial = bb::Polynomial<FF>;
+    std::vector<Polynomial> libra_polynomials(number_of_polys);
+
+    for (auto univariate : libra_univariates) {
+        auto libra_polynomial = Polynomial(interpolation_points, univariate.evaluations);
+        libra_polynomials.emplace_back(libra_polynomial);
+    }
+    // need to add libra polynomials to the proving key and commit to them
+}
 
 =======
 >>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
-    /**
-     * @brief Update Libra data consisting of Libra polynomials, Libra running sum, and Libra claimed evaluations after
-     * obtaining Sumcheck 'round_challenge'.
-     *
-     * @param libra_univariates
-     * @param round_challenge
-     * @param round_idx
-     * @param libra_running_sum
-     * @param libra_evaluations
-     */
-    void update_libra_data(ZKSumcheckSetupData& zk_sumcheck_data, const FF round_challenge, size_t round_idx)
-    {
+/**
+ * @brief Update Libra data consisting of Libra polynomials, Libra running sum, and Libra claimed evaluations after
+ * obtaining Sumcheck 'round_challenge'.
+ *
+ * @param libra_univariates
+ * @param round_challenge
+ * @param round_idx
+ * @param libra_running_sum
+ * @param libra_evaluations
+ */
+void update_libra_data(ZKSumcheckSetupData& zk_sumcheck_data, const FF round_challenge, size_t round_idx)
+{
 
-        // when round_idx = d - 1, the update is not needed
-        if (round_idx < zk_sumcheck_data.libra_univariates.size() - 1) {
-            for (auto& univariate : zk_sumcheck_data.libra_univariates) {
-                univariate *= FF(1) / FF(2);
-            };
-            // compute the evaluation \f$ \rho \cdot 2^{d-2-i} \çdot g_i(u_i) \f$
-            auto libra_evaluation = zk_sumcheck_data.libra_univariates[round_idx].evaluate(round_challenge);
-            // update the running sum by adding g_i(u_i) and subtracting (g_i(0) + g_i(1))
-            zk_sumcheck_data.libra_running_sum += -zk_sumcheck_data.libra_univariates[round_idx + 1].value_at(0) -
-                                                  zk_sumcheck_data.libra_univariates[round_idx + 1].value_at(1);
-            zk_sumcheck_data.libra_running_sum *= FF(1) / FF(2);
-
-            zk_sumcheck_data.libra_running_sum += libra_evaluation;
-            zk_sumcheck_data.libra_scaling_factor *= FF(1) / FF(2);
-
-            zk_sumcheck_data.libra_evaluations.emplace_back(libra_evaluation / zk_sumcheck_data.libra_scaling_factor);
-        } else {
-            // compute the evaluation of the last Libra univariate at the challenge u_{d-1}
-            auto libra_evaluation = zk_sumcheck_data.libra_univariates[round_idx].evaluate(round_challenge) /
-                                    zk_sumcheck_data.libra_scaling_factor;
-            // place the evalution into the vector of Libra evaluations
-            zk_sumcheck_data.libra_evaluations.emplace_back(libra_evaluation);
-            for (auto univariate : zk_sumcheck_data.libra_univariates) {
-                univariate *= FF(1) / zk_sumcheck_data.libra_challenge;
-            }
+    // when round_idx = d - 1, the update is not needed
+    if (round_idx < zk_sumcheck_data.libra_univariates.size() - 1) {
+        for (auto& univariate : zk_sumcheck_data.libra_univariates) {
+            univariate *= FF(1) / FF(2);
         };
-    }
+        // compute the evaluation \f$ \rho \cdot 2^{d-2-i} \çdot g_i(u_i) \f$
+        auto libra_evaluation = zk_sumcheck_data.libra_univariates[round_idx].evaluate(round_challenge);
+        // update the running sum by adding g_i(u_i) and subtracting (g_i(0) + g_i(1))
+        zk_sumcheck_data.libra_running_sum += -zk_sumcheck_data.libra_univariates[round_idx + 1].value_at(0) -
+                                              zk_sumcheck_data.libra_univariates[round_idx + 1].value_at(1);
+        zk_sumcheck_data.libra_running_sum *= FF(1) / FF(2);
 
-    void update_zk_sumcheck_data(ZKSumcheckSetupData& zk_sumcheck_data, FF round_challenge, size_t round_idx)
-    {
-        update_libra_data(zk_sumcheck_data, round_challenge, round_idx);
-        update_masking_terms_evaluations(zk_sumcheck_data, round_challenge);
-    }
-    void check_that_evals_do_not_leak_witness_data(std::vector<FF> multivariate_challenge)
-    {
-        auto masking_term = FF(0);
-        for (auto challenge : multivariate_challenge) {
-            masking_term += challenge * (FF(1) - challenge);
+        zk_sumcheck_data.libra_running_sum += libra_evaluation;
+        zk_sumcheck_data.libra_scaling_factor *= FF(1) / FF(2);
+
+        zk_sumcheck_data.libra_evaluations.emplace_back(libra_evaluation / zk_sumcheck_data.libra_scaling_factor);
+    } else {
+        // compute the evaluation of the last Libra univariate at the challenge u_{d-1}
+        auto libra_evaluation = zk_sumcheck_data.libra_univariates[round_idx].evaluate(round_challenge) /
+                                zk_sumcheck_data.libra_scaling_factor;
+        // place the evalution into the vector of Libra evaluations
+        zk_sumcheck_data.libra_evaluations.emplace_back(libra_evaluation);
+        for (auto univariate : zk_sumcheck_data.libra_univariates) {
+            univariate *= FF(1) / zk_sumcheck_data.libra_challenge;
         }
-        if (masking_term == FF(0)) {
-            throw_or_abort("The evaluations of witness polynomials are not masked, because u_0(1-u_0)+...+u_{d-1} "
-                           "(1-u_{d-1}) = 0 ");
-        };
+    };
+}
+
+void update_zk_sumcheck_data(ZKSumcheckSetupData& zk_sumcheck_data, FF round_challenge, size_t round_idx)
+{
+    update_libra_data(zk_sumcheck_data, round_challenge, round_idx);
+    update_masking_terms_evaluations(zk_sumcheck_data, round_challenge);
+}
+void check_that_evals_do_not_leak_witness_data(std::vector<FF> multivariate_challenge)
+{
+    auto masking_term = FF(0);
+    for (auto challenge : multivariate_challenge) {
+        masking_term += challenge * (FF(1) - challenge);
     }
+    if (masking_term == FF(0)) {
+        throw_or_abort("The evaluations of witness polynomials are not masked, because u_0(1-u_0)+...+u_{d-1} "
+                       "(1-u_{d-1}) = 0 ");
+    };
+}
 };
 /*! \brief Implementation of the sumcheck Verifier for statements of the form \f$\sum_{\vec \ell \in \{0,1\}^d}
  pow_{\beta}(\vec \ell) \cdot F \left(P_1(\vec \ell),\ldots, P_N(\vec \ell) \right)  = 0 \f$ for multilinear
@@ -802,6 +792,7 @@ template <typename Flavor> class SumcheckVerifier {
         }
         std::vector<FF> multivariate_challenge;
         multivariate_challenge.reserve(multivariate_d);
+
         for (size_t round_idx = 0; round_idx < CONST_PROOF_SIZE_LOG_N; round_idx++) {
             // Obtain the round univariate from the transcript
             std::string round_univariate_label = "Sumcheck:univariate_" + std::to_string(round_idx);
@@ -813,17 +804,15 @@ template <typename Flavor> class SumcheckVerifier {
             bool checked(true);
 
             if ((round_idx == 0) && (Flavor::HasZK)) {
-                checked = round.check_first_sum_zk(round_univariate, libra_total_sum * libra_challenge);
-            } else {
-                checked = round.check_sum(round_univariate);
+                round.target_total_sum += libra_total_sum * libra_challenge;
             };
-
             verified = verified && checked;
             FF round_challenge = transcript->template get_challenge<FF>("Sumcheck:u_" + std::to_string(round_idx));
 
             if constexpr (IsRecursiveFlavor<Flavor>) {
                 typename Flavor::CircuitBuilder* builder = round_challenge.get_context();
                 stdlib::bool_t dummy_round = stdlib::witness_t(builder, round_idx >= multivariate_d);
+
                 bool checked = round.check_sum(round_univariate, dummy_round);
                 // Only utilize the checked value if this is not a constant proof size padding round
                 if (round_idx < multivariate_d) {
@@ -839,7 +828,6 @@ template <typename Flavor> class SumcheckVerifier {
                     bool checked = round.check_sum(round_univariate);
                     verified = verified && checked;
                     multivariate_challenge.emplace_back(round_challenge);
-
                     round.compute_next_target_sum(round_univariate, round_challenge);
                     pow_univariate.partially_evaluate(round_challenge);
                 } else {

@@ -67,16 +67,18 @@ consteval std::array<size_t, RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size()> c
     }
 };
 
-template <typename RelationImpl>
-consteval std::array<size_t, RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size()> compute_zk_partial_subrelation_lengths()
-{
-    constexpr size_t NUM_SUBRELATIONS = RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size();
-    std::array<size_t, NUM_SUBRELATIONS> result;
-    for (size_t idx = 0; idx < NUM_SUBRELATIONS; idx++) {
-        result[idx] = RelationImpl::SUBRELATION_PARTIAL_LENGTHS[idx] + RelationImpl::SUBRELATION_WITNESS_DEGREES[idx];
-    }
-    return result;
-};
+// template <typename RelationImpl>
+// consteval std::array<size_t, RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size()>
+// compute_zk_partial_subrelation_lengths()
+// {
+//     constexpr size_t NUM_SUBRELATIONS = RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size();
+//     std::array<size_t, NUM_SUBRELATIONS> result;
+//     for (size_t idx = 0; idx < NUM_SUBRELATIONS; idx++) {
+//         result[idx] = RelationImpl::SUBRELATION_PARTIAL_LENGTHS[idx] +
+//         RelationImpl::SUBRELATION_WITNESS_DEGREES[idx];
+//     }
+//     return result;
+// };
 
 /**
  * @brief Get the subrelation accumulators for the Protogalaxy combiner calculation.

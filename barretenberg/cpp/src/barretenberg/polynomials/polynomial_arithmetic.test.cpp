@@ -999,8 +999,8 @@ TYPED_TEST(PolynomialTests, compute_efficient_interpolation)
         EXPECT_EQ(src[i], poly[i]);
     }
 }
-
-TYPED_TEST(PolynomialTests, compute_efficient_interpolation_standard_domain)
+// Test efficient Lagrange interpolation when interpolation points contain 0
+TYPED_TEST(PolynomialTests, compute_efficient_interpolation_domain_with_zero)
 {
     using FF = TypeParam;
     constexpr size_t n = 15;
@@ -1008,11 +1008,41 @@ TYPED_TEST(PolynomialTests, compute_efficient_interpolation_standard_domain)
 
     for (size_t i = 0; i < n; ++i) {
         poly[i] = FF(i + 1);
-        info("test value ", poly[i]);
     }
 
     for (size_t i = 0; i < n; ++i) {
         x[i] = FF(i);
+        src[i] = polynomial_arithmetic::evaluate(poly, x[i], n);
+    }
+    polynomial_arithmetic::compute_efficient_interpolation(src, src, x, n);
+
+    for (size_t i = 0; i < n; ++i) {
+        EXPECT_EQ(src[i], poly[i]);
+    }
+    // Test for the domain (-n/2, ..., 0, ... , n/2)
+
+    for (size_t i = 0; i < n; ++i) {
+        poly[i] = FF(i + 54);
+    }
+
+    for (size_t i = 0; i < n; ++i) {
+        x[i] = FF(i - n / 2);
+        src[i] = polynomial_arithmetic::evaluate(poly, x[i], n);
+    }
+    polynomial_arithmetic::compute_efficient_interpolation(src, src, x, n);
+
+    for (size_t i = 0; i < n; ++i) {
+        EXPECT_EQ(src[i], poly[i]);
+    }
+
+    // Test for the domain (-n+1, ..., 0)
+
+    for (size_t i = 0; i < n; ++i) {
+        poly[i] = FF(i * i + 57);
+    }
+
+    for (size_t i = 0; i < n; ++i) {
+        x[i] = FF(i - (n - 1));
         src[i] = polynomial_arithmetic::evaluate(poly, x[i], n);
     }
     polynomial_arithmetic::compute_efficient_interpolation(src, src, x, n);

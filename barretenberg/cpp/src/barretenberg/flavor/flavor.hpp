@@ -294,10 +294,12 @@ template <typename Tuple, std::size_t Index = 0> static constexpr size_t compute
 }
 
 /**
- * @brief Takes a Tuple of objects in the Relation class and recursively computes the maximum witness degrees among all
+ * @brief Takes a Tuple of objects in the Relation class and recursively computes the maximum witness degrees among
+ all
  * subrelations of given relations. In Ultra, it is 5.
  *
- * @details This method is needed for the computation of ZK_BATCHED_LENGTH that determines the number of evaluations of
+ * @details This method is needed for the computation of ZK_BATCHED_LENGTH that determines the number of evaluations
+ of
  * Round Univariates needed in zk-Sumcheck.
  * @tparam Tuple
  * @tparam Index
