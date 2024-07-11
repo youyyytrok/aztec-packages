@@ -66,11 +66,7 @@ template <typename Flavor> class SumcheckProverRound {
     // coefficients of libra polynomials, and evaluations of round univariates
 
     // Specify the number of witnesses and their shifts in the flavor
-<<<<<<< HEAD
     static constexpr size_t NUM_ALL_WITNESSES = Flavor::NUM_ALL_WITNESSES;
-=======
-    static constexpr size_t NUM_ALL_WITNESSES = Flavor::NUM_WITNESS_ENTITIES * 2;
->>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
 
     using SumcheckRoundUnivariate = bb::Univariate<FF, BATCHED_RELATION_PARTIAL_LENGTH>;
     using EvaluationMaskingTable = std::array<SumcheckRoundUnivariate, NUM_ALL_WITNESSES>;
@@ -79,10 +75,6 @@ template <typename Flavor> class SumcheckProverRound {
         using ClaimedLibraEvaluations = std::vector<FF>;
         using LibraUnivariates = std::vector<SumcheckRoundUnivariate>;
         using EvalMaskingArray = std::array<FF, NUM_ALL_WITNESSES>;
-<<<<<<< HEAD
-        // using LibraCommitments = std::vector<Flavor::Commitment>;
-=======
->>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
 
         EvalMaskingArray eval_masking_array;
         EvaluationMaskingTable masking_terms_evaluations;
@@ -499,39 +491,6 @@ template <typename Flavor> class SumcheckVerifierRound {
     {
         FF total_sum = univariate.value_at(0) + univariate.value_at(1);
 
-<<<<<<< HEAD
-=======
-        // TODO(#673): Conditionals like this can go away once native verification is is just recursive verification
-        // with a simulated builder.
-        bool sumcheck_round_failed(false);
-        if constexpr (IsRecursiveFlavor<Flavor>) {
-            target_total_sum.assert_equal(total_sum);
-            sumcheck_round_failed = (target_total_sum != total_sum).get_value();
-        } else {
-            sumcheck_round_failed = (target_total_sum != total_sum);
-        }
-
-        round_failed = round_failed || sumcheck_round_failed;
-        return !sumcheck_round_failed;
-    };
-
-    /**
-     * @brief In the case of ZK-Flavors, the total sum is corrected by the contribution from Libra multivariate
-     polynomial's sum over the Boolean hypercube. More explicitly, the verifier submits the product of the Libra
-     challenge and the claimed Libra sum as an input to this method and defines \f{align}{ \texttt{target_total_sum}
-     \gets \texttt{target_total_sum} + \texttt{libra_challenge} \cdot \texttt{libra_sum} \f}, and compares it to the sum
-     of the evaluations of the first round univariate at \f$ 0 \f$ and \f$0\f$.
-
-     * @param univariate First round univariate \f$\tilde{S}^{0}\f$ represented by its evaluations over
-     \f$0,\ldots,D\f$.
-     *
-     */
-    bool check_first_sum_zk(SumcheckRoundUnivariate univariate, const FF correcting_term)
-    {
-        FF total_sum = univariate.value_at(0) + univariate.value_at(1);
-
-        target_total_sum = target_total_sum + correcting_term;
->>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
         // TODO(#673): Conditionals like this can go away once native verification is is just recursive verification
         // with a simulated builder.
         bool sumcheck_round_failed(false);
@@ -633,14 +592,9 @@ template <typename Flavor> class SumcheckVerifierRound {
         // The verifier should never skip computation of contributions from any relation
         Utils::template accumulate_relation_evaluations_without_skipping<>(
             purported_evaluations, relation_evaluations, relation_parameters, pow_polynomial.partial_evaluation_result);
-<<<<<<< HEAD
 
         FF running_challenge{ 1 };
         FF output{ 0 };
-=======
-        auto running_challenge = FF(1);
-        auto output = FF(0);
->>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
         Utils::scale_and_batch_elements(relation_evaluations, alpha, running_challenge, output);
         if constexpr (Flavor::HasZK) {
             output += full_libra_purported_value.value();

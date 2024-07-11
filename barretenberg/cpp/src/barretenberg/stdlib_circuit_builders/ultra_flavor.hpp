@@ -231,7 +231,6 @@ class UltraFlavor {
                              this->table_3_shift, // column 2
                              this->table_4_shift };
         };
-<<<<<<< HEAD
         // getter for ALL witnesses including shifted ones
         auto get_all_witnesses()
         {
@@ -251,30 +250,6 @@ class UltraFlavor {
         };
         // getter for the complement of all witnesses inside all entities
         auto get_non_witnesses() { return concatenate(get_precomputed(), get_shifted_tables()); };
-=======
-        // getter for shifted tables, they are not pre-computed but do not reveal private information
-        auto get_shifted_tables() { return RefArray{ table_1_shift, table_2_shift, table_3_shift, table_4_shift }; };
-        // getter for ALL witnesses including shifted ones
-        auto get_all_witnesses()
-        {
-            return RefArray{ w_l,
-                             w_r,
-                             w_o,
-                             w_4,
-                             z_perm,
-                             w_l_shift,
-                             w_r_shift,
-                             w_o_shift,
-                             w_4_shift,
-                             sorted_accum,
-                             sorted_accum_shift,
-                             z_lookup,
-                             z_perm_shift,
-                             z_lookup_shift };
-        };
-        // getter for the complement of all witnesses inside all entities
-        auto get_non_witnesses() { return concatenate(get_precomputed(), get_shifted_tables()); }; // should be 29
->>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
     };
 
   public:

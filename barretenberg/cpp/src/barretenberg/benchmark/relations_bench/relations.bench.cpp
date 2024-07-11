@@ -3,16 +3,11 @@
 #include "barretenberg/stdlib_circuit_builders/mega_flavor.hpp"
 #include "barretenberg/stdlib_circuit_builders/ultra_flavor.hpp"
 #include "barretenberg/stdlib_circuit_builders/ultra_zk_flavor.hpp"
-<<<<<<< HEAD
 #include "barretenberg/translator_vm/translator_flavor.hpp"
-    =======
-#include "barretenberg/translator_vm/goblin_translator_flavor.hpp"
-    >>>>>>> 0ddf39290e40acc1b5429c61417f949799884519
 #include <benchmark/benchmark.h>
 
-    namespace
-{
-    auto& engine = bb::numeric::get_debug_randomness();
+namespace {
+auto& engine = bb::numeric::get_debug_randomness();
 }
 
 namespace bb::benchmark::relations {
