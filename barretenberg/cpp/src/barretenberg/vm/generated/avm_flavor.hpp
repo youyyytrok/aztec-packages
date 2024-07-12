@@ -282,6 +282,9 @@ class AvmFlavor {
         auto get_to_be_shifted() { return AvmFlavor::get_to_be_shifted<DataType>(*this); }
         auto get_shifted() { return ShiftedEntities<DataType>::get_all(); }
         auto get_precomputed() { return PrecomputedEntities<DataType>::get_all(); }
+        // test test
+        auto get_non_witnesses() { return PrecomputedEntities<DataType>::get_all(); }
+        auto get_all_witnesses() { return WireEntities<DataType>::get_all(); }
     };
 
   public:

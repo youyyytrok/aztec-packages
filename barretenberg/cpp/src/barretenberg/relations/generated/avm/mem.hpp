@@ -93,10 +93,9 @@ template <typename FF_> class memImpl {
   public:
     using FF = FF_;
 
-    static constexpr std::array<size_t, 41> SUBRELATION_PARTIAL_LENGTHS{
-        3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 4, 3, 4, 3, 4, 3, 3,
-        3, 4, 4, 4, 4, 4, 6, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    };
+    static constexpr std::array<size_t, 44> SUBRELATION_PARTIAL_LENGTHS = { 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3,
+                                                                            4, 3, 4, 3, 4, 3, 3, 3, 4, 4, 4, 4, 4, 6, 4,
+                                                                            3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 };
 
     template <typename ContainerOverSubrelations, typename AllEntities>
     void static accumulate(ContainerOverSubrelations& evals,
