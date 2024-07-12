@@ -9,13 +9,9 @@ class UltraFlavorWithZK : public bb::UltraFlavor {
   public:
     static constexpr bool HasZK = true;
 
-    static constexpr size_t NON_ZK_LENGTH = UltraFlavor::BATCHED_RELATION_PARTIAL_LENGTH;
-
-    static constexpr size_t MAX_WITNESS_DEGREE = compute_max_witness_degree<Relations>();
-
     // Determines the number of evaluations of Prover and Libra Polynomials the Prover needs to send to the Verifier in
     // zk-Sumcheck.
-    static constexpr size_t BATCHED_RELATION_PARTIAL_LENGTH = NON_ZK_LENGTH + MAX_WITNESS_DEGREE;
+    static constexpr size_t BATCHED_RELATION_PARTIAL_LENGTH = compute_max_zk_length<Relations>() + 1;
 
     using SumcheckTupleOfTuplesOfUnivariates = decltype(create_zk_sumcheck_tuple_of_tuples_of_univariates<Relations>());
 

@@ -27,16 +27,7 @@ template <typename FF_> class gasImpl {
         2,
         2,
     };
-    static constexpr std::array<size_t, 3> SUBRELATION_WITNESS_DEGREES{
-        1,
-        1,
-        1,
-    };
-    static constexpr std::array<size_t, 3> ZK_SUBRELATION_PARTIAL_LENGTHS{
-        3,
-        3,
-        3,
-    };
+
     template <typename ContainerOverSubrelations, typename AllEntities>
     void static accumulate(ContainerOverSubrelations& evals,
                            const AllEntities& new_term,

@@ -23,12 +23,6 @@ template <typename FF_> class conversionImpl {
     static constexpr std::array<size_t, 1> SUBRELATION_PARTIAL_LENGTHS{
         3,
     };
-    static constexpr std::array<size_t, 1> SUBRELATION_WITNESS_DEGREES{
-        2,
-    };
-    static constexpr std::array<size_t, 1> ZK_SUBRELATION_PARTIAL_LENGTHS{
-        5,
-    };
 
     template <typename ContainerOverSubrelations, typename AllEntities>
     void static accumulate(ContainerOverSubrelations& evals,

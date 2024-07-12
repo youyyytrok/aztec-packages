@@ -1,4 +1,5 @@
 #include "ultra_prover.hpp"
+#include "barretenberg/stdlib_circuit_builders/mega_flavor.hpp"
 #include "barretenberg/sumcheck/sumcheck.hpp"
 #include "barretenberg/ultra_honk/decider_prover.hpp"
 #include "barretenberg/ultra_honk/oink_prover.hpp"
@@ -62,5 +63,6 @@ template <IsUltraFlavor Flavor> HonkProof UltraProver_<Flavor>::construct_proof(
 
 template class UltraProver_<UltraFlavorWithZK>;
 template class UltraProver_<UltraFlavor>;
+template class UltraProver_<MegaFlavor>;
 
 } // namespace bb

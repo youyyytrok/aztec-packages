@@ -120,6 +120,8 @@ class AvmFlavor {
     // the unshifted and one for the shifted
     static constexpr size_t NUM_ALL_ENTITIES = 485;
 
+    static constexpr size_t NUM_ALL_WITNESSES = 483;
+
     using MainRelations = std::tuple<
         // Relations
         Avm_vm::alu<FF>,

@@ -31,6 +31,9 @@ concept HasSubrelationLinearlyIndependentMember = requires(T) {
 template <typename T>
 concept HasParameterLengthAdjustmentsMember = requires { T::TOTAL_LENGTH_ADJUSTMENTS; };
 
+template <typename T>
+concept HasWitnessDegrees = requires { T::SUBRELATION_WITNESS_DEGREES; };
+
 /**
  * @brief Check whether a given subrelation is linearly independent from the other subrelations.
  *
@@ -67,18 +70,21 @@ consteval std::array<size_t, RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size()> c
     }
 };
 
-// template <typename RelationImpl>
-// consteval std::array<size_t, RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size()>
-// compute_zk_partial_subrelation_lengths()
-// {
-//     constexpr size_t NUM_SUBRELATIONS = RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size();
-//     std::array<size_t, NUM_SUBRELATIONS> result;
-//     for (size_t idx = 0; idx < NUM_SUBRELATIONS; idx++) {
-//         result[idx] = RelationImpl::SUBRELATION_PARTIAL_LENGTHS[idx] +
-//         RelationImpl::SUBRELATION_WITNESS_DEGREES[idx];
-//     }
-//     return result;
-// };
+template <typename RelationImpl>
+consteval std::array<size_t, RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size()> compute_zk_partial_subrelation_lengths()
+{
+    if constexpr (HasWitnessDegrees<RelationImpl>) {
+        constexpr size_t NUM_SUBRELATIONS = RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size();
+        std::array<size_t, NUM_SUBRELATIONS> result;
+        for (size_t idx = 0; idx < NUM_SUBRELATIONS; idx++) {
+            result[idx] =
+                RelationImpl::SUBRELATION_PARTIAL_LENGTHS[idx] + RelationImpl::SUBRELATION_WITNESS_DEGREES[idx];
+        }
+        return result;
+    } else {
+        return RelationImpl::SUBRELATION_PARTIAL_LENGTHS;
+    }
+};
 
 /**
  * @brief Get the subrelation accumulators for the Protogalaxy combiner calculation.
@@ -152,14 +158,18 @@ template <typename RelationImpl> class Relation : public RelationImpl {
 
     static constexpr std::array<size_t, RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size()> SUBRELATION_TOTAL_LENGTHS =
         compute_total_subrelation_lengths<RelationImpl>();
+    static constexpr std::array<size_t, RelationImpl::SUBRELATION_PARTIAL_LENGTHS.size()> ZK_PARTIAL_LENGTHS =
+        compute_zk_partial_subrelation_lengths<RelationImpl>();
 
     static constexpr size_t RELATION_LENGTH = *std::max_element(RelationImpl::SUBRELATION_PARTIAL_LENGTHS.begin(),
                                                                 RelationImpl::SUBRELATION_PARTIAL_LENGTHS.end());
 
     static constexpr size_t TOTAL_RELATION_LENGTH =
         *std::max_element(SUBRELATION_TOTAL_LENGTHS.begin(), SUBRELATION_TOTAL_LENGTHS.end());
+    static constexpr size_t ZK_TOTAL_RELATION_LENGTH =
+        *std::max_element(ZK_PARTIAL_LENGTHS.begin(), ZK_PARTIAL_LENGTHS.end());
 
-    // Compute the maximum witness degre of a given Relation
+    // Compute the maximum witness degree of a given Relation
 
     static constexpr size_t TOTAL_RELATION_WITNESS_DEGREE = *std::max_element(
         RelationImpl::SUBRELATION_WITNESS_DEGREES.begin(), RelationImpl::SUBRELATION_WITNESS_DEGREES.end());
@@ -176,10 +186,11 @@ template <typename RelationImpl> class Relation : public RelationImpl {
     using SumcheckTupleOfUnivariatesOverSubrelations =
         TupleOfUnivariates<FF, RelationImpl::SUBRELATION_PARTIAL_LENGTHS>;
     using ZKSumcheckTupleOfUnivariatesOverSubrelations =
-        TupleOfUnivariates<FF, RelationImpl::ZK_SUBRELATION_PARTIAL_LENGTHS>;
+        TupleOfUnivariates<FF, compute_zk_partial_subrelation_lengths<RelationImpl>()>;
 
     using SumcheckArrayOfValuesOverSubrelations = ArrayOfValues<FF, RelationImpl::SUBRELATION_PARTIAL_LENGTHS>;
-    using ZKSumcheckArrayOfValuesOverSubrelations = ArrayOfValues<FF, RelationImpl::ZK_SUBRELATION_PARTIAL_LENGTHS>;
+    using ZKSumcheckArrayOfValuesOverSubrelations =
+        ArrayOfValues<FF, compute_zk_partial_subrelation_lengths<RelationImpl>()>;
 
     // These are commonly needed, most importantly, for explicitly instantiating
     // compute_foo_numerator/denomintor.

@@ -97,14 +97,7 @@ template <typename FF_> class memImpl {
         3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 3, 4, 3, 4, 3, 4, 3, 3,
         3, 4, 4, 4, 4, 4, 6, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     };
-    static constexpr std::array<size_t, 41> SUBRELATION_WITNESS_DEGREES{
-        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 3, 2, 3, 2, 3, 2, 2,
-        2, 3, 3, 3, 3, 3, 5, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    };
-    static constexpr std::array<size_t, 41> ZK_SUBRELATION_PARTIAL_LENGTHS{
-        5, 5, 5, 5, 5, 5, 5,  5, 5, 5, 5, 5, 3, 5, 7, 5, 7, 5, 7, 5, 5,
-        5, 7, 7, 7, 7, 7, 11, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-    };
+
     template <typename ContainerOverSubrelations, typename AllEntities>
     void static accumulate(ContainerOverSubrelations& evals,
                            const AllEntities& new_term,
