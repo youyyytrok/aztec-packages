@@ -23,16 +23,6 @@ template <typename FF_> class DeltaRangeConstraintRelationImpl {
         3, // range constrain sub-relation 3
         3  // range constrain sub-relation 4
     };
-    /**
-     * @brief Sub-relation partial lengths used in ZK-Sumcheck
-     *
-     */
-    static constexpr std::array<size_t, 4> ZK_SUBRELATION_PARTIAL_LENGTHS{
-        9, // range constrain sub-relation 1
-        9, // range constrain sub-relation 2
-        9, // range constrain sub-relation 3
-        9  // range constrain sub-relation 4
-    };
 
     /**
      * @brief Returns true if the contribution from all subrelations for the provided inputs is identically zero

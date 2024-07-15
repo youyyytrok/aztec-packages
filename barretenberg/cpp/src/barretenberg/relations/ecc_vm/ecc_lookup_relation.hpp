@@ -29,14 +29,6 @@ template <typename FF_> class ECCVMLookupRelationImpl {
         LENGTH - 1, // grand product construction sub-relation
         LENGTH - 1  // left-shiftable polynomial sub-relation
     };
-    /**
-     * @brief Upper bound on sub-relation partial lengths used in ZK-Sumcheck
-     *
-     */
-    static constexpr std::array<size_t, 2> ZK_SUBRELATION_PARTIAL_LENGTHS{
-        2 * LENGTH - 1, // grand product construction sub-relation
-        2 * LENGTH - 1  // left-shiftable polynomial sub-relation
-    };
 
     static constexpr std::array<bool, 2> SUBRELATION_LINEARLY_INDEPENDENT = { true, false };
 

@@ -151,7 +151,6 @@ template <typename Flavor> class SumcheckProver {
 
     std::shared_ptr<Transcript> transcript;
     SumcheckProverRound<Flavor> round;
-    SumcheckVerifierRound<Flavor> round_verifier;
 
     /**
     *

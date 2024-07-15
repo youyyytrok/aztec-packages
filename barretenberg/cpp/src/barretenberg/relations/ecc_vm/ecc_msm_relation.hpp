@@ -48,14 +48,6 @@ template <typename FF_> class ECCVMMSMRelationImpl {
     static constexpr std::array<size_t, 36> SUBRELATION_WITNESS_DEGREES{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
                                                                          7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
                                                                          7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 };
-    /**
-     * @brief Upper bound on sub-relation partial lengths used in ZK-Sumcheck
-     *
-     */
-    static constexpr std::array<size_t, 36> ZK_SUBRELATION_PARTIAL_LENGTHS{ 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                                                                            15, 15, 15, 15, 15, 15, 15, 15, 15,
-                                                                            15, 15, 15, 15, 15, 15, 15, 15, 15,
-                                                                            15, 15, 15, 15, 15, 15, 15, 15, 15 };
 
     template <typename ContainerOverSubrelations, typename AllEntities, typename Parameters>
     static void accumulate(ContainerOverSubrelations& accumulator,

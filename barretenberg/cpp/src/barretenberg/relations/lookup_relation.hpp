@@ -52,11 +52,7 @@ template <typename FF_> class LookupRelationImpl {
      *
      */
     static constexpr std::array<size_t, 2> SUBRELATION_WITNESS_DEGREES{ 5, 1 };
-    /**
-     * @brief Sub-relation partial lengths used in ZK-Sumcheck
-     *
-     */
-    static constexpr std::array<size_t, 2> ZK_SUBRELATION_PARTIAL_LENGTHS{ 11, 4 };
+
     /**
      * @brief Returns true if the contribution from all subrelations for the provided inputs is identically zero
      *

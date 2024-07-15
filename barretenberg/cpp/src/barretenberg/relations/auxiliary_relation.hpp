@@ -53,20 +53,6 @@ template <typename FF_> class AuxiliaryRelationImpl {
         2, // RAM consistency sub-relation 2: index is monotonously increasing
         2  // RAM consistency sub-relation 3: next gate access type is boolean
     };
-    /**
-     * @brief Sub-relation partial lengths used in ZK-Sumcheck
-     *
-     */
-    static constexpr std::array<size_t, 6> ZK_SUBRELATION_PARTIAL_LENGTHS{
-        8, // auxiliary sub-relation;
-        8, // ROM consistency sub-relation 1: adjacent values match if adjacent indices match and next access is a read
-           // operation
-        8, // ROM consistency sub-relation 2: index is monotonously increasing
-        9, // RAM consistency sub-relation 1: adjacent values match if adjacent indices match and next access is a read
-           // operation
-        8, // RAM consistency sub-relation 2: index is monotonously increasing
-        8  // RAM consistency sub-relation 3: next gate access type is boolean
-    };
 
     static constexpr std::array<size_t, 6> TOTAL_LENGTH_ADJUSTMENTS{
         1, // auxiliary sub-relation

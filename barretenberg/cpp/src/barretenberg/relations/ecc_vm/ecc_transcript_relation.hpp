@@ -40,19 +40,11 @@ template <typename FF_> class ECCVMTranscriptRelationImpl {
     static constexpr std::array<size_t, 35> SUBRELATION_WITNESS_DEGREES{
         5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
     };
-    /**
-     * @brief Upper bound on sub-relation partial lengths used in ZK-Sumcheck
-     *
-     */
-    static constexpr std::array<size_t, 35> ZK_SUBRELATION_PARTIAL_LENGTHS{
-        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-        11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-    };
+
     /**
      * @brief Upper bound on total degrees of sub-relations considered as polynomials in witnesses.
      *
      */
-
     template <typename ContainerOverSubrelations, typename AllEntities, typename Parameters>
     static void accumulate(ContainerOverSubrelations& accumulator,
                            const AllEntities& in,

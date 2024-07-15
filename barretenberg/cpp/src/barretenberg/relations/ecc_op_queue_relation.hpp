@@ -31,20 +31,6 @@ template <typename FF_> class EccOpQueueRelationImpl {
         1, // op-queue-wire vanishes sub-relation 3
         1  // op-queue-wire vanishes sub-relation 4
     };
-    /**
-     * @brief Sub-relation partial lengths used in ZK-Sumcheck
-     *
-     */
-    static constexpr std::array<size_t, 8> ZK_SUBRELATION_PARTIAL_LENGTHS{
-        4, // wire - op-queue-wire consistency sub-relation 1
-        4, // wire - op-queue-wire consistency sub-relation 2
-        4, // wire - op-queue-wire consistency sub-relation 3
-        4, // wire - op-queue-wire consistency sub-relation 4
-        4, // op-queue-wire vanishes sub-relation 1
-        4, // op-queue-wire vanishes sub-relation 2
-        4, // op-queue-wire vanishes sub-relation 3
-        4  // op-queue-wire vanishes sub-relation 4
-    };
 
     template <typename AllEntities> inline static bool skip([[maybe_unused]] const AllEntities& in)
     {

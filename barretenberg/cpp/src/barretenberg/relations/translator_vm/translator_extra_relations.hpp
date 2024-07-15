@@ -19,13 +19,6 @@ template <typename FF_> class TranslatorOpcodeConstraintRelationImpl {
     static constexpr std::array<size_t, 1> SUBRELATION_WITNESS_LENGTHS{
         6 // opcode constraint relation
     };
-    /**
-     * @brief Upper bound on sub-relation partial lengths used in ZK-Sumcheck
-     *
-     */
-    static constexpr std::array<size_t, 1> ZK_SUBRELATION_PARTIAL_LENGTHS{
-        13 // opcode constraint relation
-    };
 
     /**
      * @brief Returns true if the contribution from all subrelations for the provided inputs is identically zero
@@ -90,25 +83,7 @@ template <typename FF_> class TranslatorAccumulatorTransferRelationImpl {
         1  // accumulator limb 3 is equal to given result at the end of accumulation subrelation
 
     };
-    /**
-     * @brief Upper bound on sub-relation partial lengths used in ZK-Sumcheck
-     *
-     */
-    static constexpr std::array<size_t, 12> ZK_SUBRELATION_PARTIAL_LENGTHS{
-        4, // transfer accumulator limb 0 at even index subrelation
-        4, // transfer accumulator limb 1 at even index subrelation
-        4, // transfer accumulator limb 2 at even index subrelation
-        4, // transfer accumulator limb 3 at even index subrelation
-        4, // accumulator limb 0 is zero at the start of accumulation subrelation
-        4, // accumulator limb 1 is zero at the start of accumulation subrelation
-        4, // accumulator limb 2 is zero at the start of accumulation subrelation
-        4, // accumulator limb 3 is zero at the start of accumulation subrelation
-        4, // accumulator limb 0 is equal to given result at the end of accumulation subrelation
-        4, // accumulator limb 1 is equal to given result at the end of accumulation subrelation
-        4, // accumulator limb 2 is equal to given result at the end of accumulation subrelation
-        4  // accumulator limb 3 is equal to given result at the end of accumulation subrelation
 
-    };
     /**
      * @brief Returns true if the contribution from all subrelations for the provided inputs is identically zero
      *

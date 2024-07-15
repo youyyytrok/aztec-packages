@@ -27,11 +27,6 @@ template <typename FF_> class LogDerivLookupRelationImpl {
         2, // read_term has witness degree 1, write_term does not carry witness info, inverses has witness degree 1
         3, // write_inverse has witness degree 2, read_counts has witness degree 1
     };
-    // Upper bound, to be clarified
-    static constexpr std::array<size_t, 2> ZK_SUBRELATION_PARTIAL_LENGTHS{
-        LENGTH + 2, // inverse construction sub-relation
-        LENGTH + 3  // log derivative lookup argument sub-relation
-    };
 
     // TODO(https://github.com/AztecProtocol/barretenberg/issues/1036): Scrutinize these adjustment factors. Counting
     // degrees suggests the first subrelation should require an adjustment of 2.

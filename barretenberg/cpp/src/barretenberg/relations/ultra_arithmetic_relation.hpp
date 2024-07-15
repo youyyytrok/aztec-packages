@@ -17,11 +17,7 @@ template <typename FF_> class UltraArithmeticRelationImpl {
      *
      */
     static constexpr std::array<size_t, 2> SUBRELATION_WITNESS_DEGREES{ 2, 2 };
-    /**
-     * @brief Sub-relation partial lengths used in ZK-Sumcheck
-     *
-     */
-    static constexpr std::array<size_t, 2> ZK_SUBRELATION_PARTIAL_LENGTHS{ 8, 7 };
+
     /**
      * @brief Returns true if the contribution from all subrelations for the provided inputs is identically zero
      *

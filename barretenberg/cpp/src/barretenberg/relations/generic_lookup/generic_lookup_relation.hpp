@@ -202,10 +202,6 @@ template <typename Settings, typename FF_> class GenericLookupRelationImpl {
         LENGTH - 1  // log-derived terms subrelation
     };
 
-    static constexpr std::array<size_t, 2> ZK_SUBRELATION_PARTIAL_LENGTHS{
-        2 * LENGTH - 1, // inverse polynomial correctness sub-relation
-        2 * LENGTH - 1  // log-derived terms subrelation
-    };
     /**
      * @brief We apply the power polynomial only to the first subrelation
      *

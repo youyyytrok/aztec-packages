@@ -44,11 +44,6 @@ template <typename FF_> class UltraPermutationRelationImpl {
         5, // grand product construction sub-relation
         1  // left-shiftable polynomial sub-relation
     };
-    /**
-     * @brief Sub-relation partial lengths used in ZK-Sumcheck
-     *
-     */
-    static constexpr std::array<size_t, 2> ZK_SUBRELATION_PARTIAL_LENGTHS{ 11, 4 };
 
     /**
      * @brief Returns true if the contribution from all subrelations for the provided inputs is identically zero

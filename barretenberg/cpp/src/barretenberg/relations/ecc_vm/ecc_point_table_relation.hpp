@@ -25,11 +25,6 @@ template <typename FF_> class ECCVMPointTableRelationImpl {
      *
      */
     static constexpr std::array<size_t, 6> SUBRELATION_WITNESS_DEGREES{ 5, 5, 5, 5, 5, 5 };
-    /**
-     * @brief Upper bound on sub-relation partial lengths used in ZK-Sumcheck
-     *
-     */
-    static constexpr std::array<size_t, 6> ZK_SUBRELATION_PARTIAL_LENGTHS{ 11, 11, 11, 11, 11, 11 };
 
     template <typename ContainerOverSubrelations, typename AllEntities, typename Parameters>
     static void accumulate(ContainerOverSubrelations& accumulator,
