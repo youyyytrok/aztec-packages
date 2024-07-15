@@ -13,7 +13,7 @@ template <typename FF_> class TranslatorOpcodeConstraintRelationImpl {
         7 // opcode constraint relation
     };
     /**
-     * @brief Upper bound on total degrees of sub-relations considered as polynomials in witnesses.
+     * @brief Total degree of the relation considered as a polynomial in witnesses.
      *
      */
     static constexpr std::array<size_t, 1> SUBRELATION_WITNESS_LENGTHS{
@@ -69,18 +69,18 @@ template <typename FF_> class TranslatorAccumulatorTransferRelationImpl {
      *
      */
     static constexpr std::array<size_t, 12> SUBRELATION_WITNESS_DEGREES{
-        1, // transfer accumulator limb 0 at even index subrelation
-        1, // transfer accumulator limb 1 at even index subrelation
-        1, // transfer accumulator limb 2 at even index subrelation
-        1, // transfer accumulator limb 3 at even index subrelation
-        1, // accumulator limb 0 is zero at the start of accumulation subrelation
-        1, // accumulator limb 1 is zero at the start of accumulation subrelation
-        1, // accumulator limb 2 is zero at the start of accumulation subrelation
-        1, // accumulator limb 3 is zero at the start of accumulation subrelation
-        1, // accumulator limb 0 is equal to given result at the end of accumulation subrelation
-        1, // accumulator limb 1 is equal to given result at the end of accumulation subrelation
-        1, // accumulator limb 2 is equal to given result at the end of accumulation subrelation
-        1  // accumulator limb 3 is equal to given result at the end of accumulation subrelation
+        2, // transfer accumulator limb 0 at even index subrelation
+        2, // transfer accumulator limb 1 at even index subrelation
+        2, // transfer accumulator limb 2 at even index subrelation
+        2, // transfer accumulator limb 3 at even index subrelation
+        2, // accumulator limb 0 is zero at the start of accumulation subrelation
+        2, // accumulator limb 1 is zero at the start of accumulation subrelation
+        2, // accumulator limb 2 is zero at the start of accumulation subrelation
+        2, // accumulator limb 3 is zero at the start of accumulation subrelation
+        2, // accumulator limb 0 is equal to given result at the end of accumulation subrelation
+        2, // accumulator limb 1 is equal to given result at the end of accumulation subrelation
+        2, // accumulator limb 2 is equal to given result at the end of accumulation subrelation
+        2  // accumulator limb 3 is equal to given result at the end of accumulation subrelation
 
     };
 

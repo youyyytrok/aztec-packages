@@ -37,14 +37,10 @@ template <typename FF_> class ECCVMTranscriptRelationImpl {
      * @brief Upper bound on total degrees of sub-relations considered as polynomials in witnesses.
      *
      */
-    static constexpr std::array<size_t, 35> SUBRELATION_WITNESS_DEGREES{
-        5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    static constexpr std::array<size_t, 25> SUBRELATION_WITNESS_DEGREES{
+        7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
     };
 
-    /**
-     * @brief Upper bound on total degrees of sub-relations considered as polynomials in witnesses.
-     *
-     */
     template <typename ContainerOverSubrelations, typename AllEntities, typename Parameters>
     static void accumulate(ContainerOverSubrelations& accumulator,
                            const AllEntities& in,

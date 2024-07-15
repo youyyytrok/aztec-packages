@@ -48,7 +48,7 @@
  * @note It would be ideal to codify more structure in these base class template and to have it imposed on the actual
  * flavors, but our inheritance model is complicated as it is, and we saw no reasonable way to fix this.
  *
- * @note One asymmetry to note is in the use of the term "key". It is worthwhile to distinguish betwen prover/verifier
+ * @note One asymmetry to note is in the use of the term "key". It is worthwhile to distinguish between prover/verifier
  * circuit data, and "keys" that consist of such data augmented with witness data (whether, raw, blinded, or polynomial
  * commitments). Currently the proving key contains witness data, while the verification key does not.
  * TODO(Cody): It would be nice to resolve this but it's not essential.
@@ -293,30 +293,17 @@ template <typename Tuple, std::size_t Index = 0> static constexpr size_t compute
     }
 }
 
-// /**
-//  * @brief Takes a Tuple of objects in the Relation class and recursively computes the maximum witness degrees among
-//  all
-//  * subrelations of given relations. In Ultra, it is 5.
-//  *
-//  * @details This method is needed for the computation of ZK_BATCHED_LENGTH that determines the number of evaluations
-//  of
-//  * Round Univariates needed in zk-Sumcheck.
-//  * @tparam Tuple
-//  * @tparam Index
-//  * @return constexpr size_t
-//  */
-// template <typename Tuple, std::size_t Index = 0> static constexpr size_t compute_max_witness_degree()
-// {
-//     if constexpr (Index >= std::tuple_size<Tuple>::value) {
-//         return 0; // Return 0 when reach end of the tuple
-//     } else {
-//         constexpr size_t current_witness_degree = std::tuple_element<Index,
-//         Tuple>::type::TOTAL_RELATION_WITNESS_DEGREE; constexpr size_t next_witness_degree =
-//         compute_max_witness_degree<Tuple, Index + 1>(); return (current_witness_degree > next_witness_degree) ?
-//         current_witness_degree : next_witness_degree;
-//     }
-// }
-
+/**
+ * @brief Takes a Tuple of objects in the Relation class and recursively computes the maximum zk partial subrelation
+ length among all
+ * subrelations of given relations.
+ *
+ * @details This method is needed for the computation of the size of
+ * Round Univariates needed in zk-Sumcheck.
+ * @tparam Tuple
+ * @tparam Index
+ * @return constexpr size_t
+ */
 template <typename Tuple, std::size_t Index = 0> static constexpr size_t compute_max_zk_length()
 {
     if constexpr (Index >= std::tuple_size<Tuple>::value) {
@@ -371,10 +358,11 @@ template <typename Tuple, std::size_t Index = 0> static constexpr auto create_su
 }
 
 /**
- * @brief Recursive utility function to construct a container for the subrelation accumulators of sumcheck proving.
+ * @brief Recursive utility function to construct a container for the subrelation accumulators of zk-sumcheck prover.
  * @details The size of the outer tuple is equal to the number of relations. Each relation contributes an inner tuple of
  * univariates whose size is equal to the number of subrelations of the relation. The length of a univariate in an inner
- * tuple is determined by the corresponding subrelation length.
+ * tuple is determined by the corresponding zk subrelation length, i.e. by the subrelation partial length corrected by
+ * the corresponding witness degree.
  */
 template <typename Tuple, std::size_t Index = 0>
 static constexpr auto create_zk_sumcheck_tuple_of_tuples_of_univariates()
@@ -400,21 +388,6 @@ template <typename Tuple, std::size_t Index = 0> static constexpr auto create_tu
         return std::tuple<>{}; // Return empty when reach end of the tuple
     } else {
         using Values = typename std::tuple_element_t<Index, Tuple>::SumcheckArrayOfValuesOverSubrelations;
-        return std::tuple_cat(std::tuple<Values>{}, create_tuple_of_arrays_of_values<Tuple, Index + 1>());
-    }
-}
-
-/**
- * @brief Recursive utility function to construct tuple of arrays
- * @details Container for storing value of each identity in each relation. Each Relation contributes an array of
- * length num-identities.
- */
-template <typename Tuple, std::size_t Index = 0> static constexpr auto create_zk_tuple_of_arrays_of_values()
-{
-    if constexpr (Index >= std::tuple_size<Tuple>::value) {
-        return std::tuple<>{}; // Return empty when reach end of the tuple
-    } else {
-        using Values = typename std::tuple_element_t<Index, Tuple>::ZKSumcheckArrayOfValuesOverSubrelations;
         return std::tuple_cat(std::tuple<Values>{}, create_tuple_of_arrays_of_values<Tuple, Index + 1>());
     }
 }
@@ -496,10 +469,6 @@ template <typename T> concept IsFoldingFlavor = IsAnyOf<T, UltraFlavor,
                                                            MegaRecursiveFlavor_<UltraCircuitBuilder>, 
                                                            MegaRecursiveFlavor_<MegaCircuitBuilder>, MegaRecursiveFlavor_<CircuitSimulatorBN254>>;
 
-
-
-
-// template <typename T> concept IsZKFlavor = IsAnyOf<T, UltraFlavorWithZK>;
 
 template <typename Container, typename Element>
 

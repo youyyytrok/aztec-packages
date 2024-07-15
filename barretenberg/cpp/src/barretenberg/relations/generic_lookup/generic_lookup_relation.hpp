@@ -197,6 +197,10 @@ template <typename Settings, typename FF_> class GenericLookupRelationImpl {
         LENGTH, // inverse polynomial correctness sub-relation
         LENGTH  // log-derived terms subrelation
     };
+    /**
+     * @brief Upper bound on total degrees of sub-relations considered as polynomials in witnesses.
+     *
+     */
     static constexpr std::array<size_t, 2> SUBRELATION_WITNESS_DEGREES{
         LENGTH - 1, // inverse polynomial correctness sub-relation
         LENGTH - 1  // log-derived terms subrelation

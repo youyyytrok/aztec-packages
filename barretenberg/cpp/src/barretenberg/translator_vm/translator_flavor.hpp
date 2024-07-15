@@ -720,11 +720,20 @@ class TranslatorFlavor {
             result.insert(result.end(), special.begin(), special.end());
             return result;
         }
-
+        /**
+         * @brief Get witness polynomials including shifts. This getter is required by ZK-Sumcheck.
+         *
+         * @return auto
+         */
         auto get_all_witnesses()
         {
             return concatenate(ShiftedEntities<DataType>::get_all(), WitnessEntities<DataType>::get_all());
         };
+        /**
+         * @brief Get all non-witness polynomials. In this case, contains only PrecomputedEntities.
+         *
+         * @return auto
+         */
         auto get_non_witnesses() { return PrecomputedEntities<DataType>::get_all(); };
 
         friend std::ostream& operator<<(std::ostream& os, const AllEntities& a)
