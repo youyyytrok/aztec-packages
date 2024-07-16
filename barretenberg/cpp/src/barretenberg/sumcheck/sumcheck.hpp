@@ -257,7 +257,7 @@ template <typename Flavor> class SumcheckProver {
         // Check that the challenges \f$ u_0,\ldots, u_{d-1} \f$ do not satisfy the equation \f$ u_0(1-u_0) + \ldots +
         // u_{d-1} (1 - u_{d-1}) = 0 \f$. This equation is satisfied with prob ~ 1/|FF|, in such cases the prover has to
         // abort and start ZK-Sumcheck anew.
-        if (Flavor::HasZK) {
+        if constexpr (Flavor::HasZK) {
             check_that_evals_do_not_leak_witness_data(multivariate_challenge);
         };
 
@@ -276,7 +276,7 @@ template <typename Flavor> class SumcheckProver {
         // Claimed evaluations of Prover polynomials are extracted and sent to the verifier. When Flavor has ZK, the
         // evaluations of all witnesses are masked.
         ClaimedEvaluations multivariate_evaluations;
-        if (Flavor::HasZK) {
+        if constexpr (Flavor::HasZK) {
             extract_zk_claimed_evaluations(
                 partially_evaluated_polynomials, zk_sumcheck_data.masking_terms_evaluations, multivariate_evaluations);
         } else {
