@@ -131,8 +131,9 @@ template <typename Flavor> class SumcheckProver {
 
     // this constant specifies the number of coefficients of libra polynomials, and evaluations of round univariate
     static constexpr size_t BATCHED_RELATION_PARTIAL_LENGTH = Flavor::BATCHED_RELATION_PARTIAL_LENGTH;
-    // Specify the number of witnesses and their shifts in the flavor
-    static constexpr size_t NUM_ALL_WITNESSES = Flavor::NUM_ALL_WITNESSES;
+    // Specify the number of all witnesses including shifts and derived witnesses from flavors that have ZK,
+    // otherwise, set this constant to 0
+    static constexpr size_t NUM_ALL_WITNESSES = Flavor::HasZK ? Flavor::NUM_ALL_WITNESSES : 0;
     /**
      * @brief The size of the hypercube, i.e. \f$ 2^d\f$.
      *
@@ -147,7 +148,8 @@ template <typename Flavor> class SumcheckProver {
      */
     const size_t multivariate_d;
     using EvalMaskingArray = std::array<FF, NUM_ALL_WITNESSES>;
-    using LibraUnivariates = std::vector<SumcheckRoundUnivariate>;
+    static constexpr size_t LIBRA_UNIVARIATES_LENGTH = Flavor::HasZK ? Flavor::BATCHED_RELATION_PARTIAL_LENGTH : 0;
+    using LibraUnivariates = std::vector<Univariate<FF, LIBRA_UNIVARIATES_LENGTH>>;
 
     std::shared_ptr<Transcript> transcript;
     SumcheckProverRound<Flavor> round;
@@ -440,9 +442,10 @@ template <typename Flavor> class SumcheckProver {
     {
         LibraUnivariates libra_full_polynomials;
         for (size_t k = 0; k < number_of_polynomials; ++k) {
-            auto libra_polynomial = SumcheckRoundUnivariate::get_random(); // generate random polynomial of
-                                                                           // required size
-            libra_full_polynomials.emplace_back(libra_polynomial);         // place random polynomial into the vector
+            auto libra_polynomial =
+                bb::Univariate<FF, LIBRA_UNIVARIATES_LENGTH>::get_random(); // generate random polynomial of
+                                                                            // required size
+            libra_full_polynomials.emplace_back(libra_polynomial);          // place random polynomial into the vector
         };
 
         return libra_full_polynomials;

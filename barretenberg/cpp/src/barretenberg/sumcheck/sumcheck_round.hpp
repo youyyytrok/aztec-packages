@@ -65,16 +65,19 @@ template <typename Flavor> class SumcheckProverRound {
     // static constexpr size_t ZK_BATCHED_LENGTH = Flavor::ZK_BATCHED_LENGTH; //this constant specifies the number of
     // coefficients of libra polynomials, and evaluations of round univariates
 
-    // Specify the number of witnesses and their shifts in the flavor
-    static constexpr size_t NUM_ALL_WITNESSES = Flavor::NUM_ALL_WITNESSES;
-
     using SumcheckRoundUnivariate = bb::Univariate<FF, BATCHED_RELATION_PARTIAL_LENGTH>;
-    using EvaluationMaskingTable = std::array<SumcheckRoundUnivariate, NUM_ALL_WITNESSES>;
 
     struct ZKSumcheckSetupData {
+        // Specify the number of all witnesses including shifts and derived witnesses from flavors that have ZK,
+        // otherwise, set this constant to 0
+        static constexpr size_t NUM_ALL_WITNESSES = Flavor::HasZK ? Flavor::NUM_ALL_WITNESSES : 0;
+
+        // The size of the LibraUnivariates
+        static constexpr size_t LIBRA_UNIVARIATES_LENGTH = Flavor::HasZK ? Flavor::BATCHED_RELATION_PARTIAL_LENGTH : 0;
         using ClaimedLibraEvaluations = std::vector<FF>;
-        using LibraUnivariates = std::vector<SumcheckRoundUnivariate>;
+        using LibraUnivariates = std::vector<bb::Univariate<FF, LIBRA_UNIVARIATES_LENGTH>>;
         using EvalMaskingArray = std::array<FF, NUM_ALL_WITNESSES>;
+        using EvaluationMaskingTable = std::array<SumcheckRoundUnivariate, NUM_ALL_WITNESSES>;
 
         EvalMaskingArray eval_masking_array;
         EvaluationMaskingTable masking_terms_evaluations;
