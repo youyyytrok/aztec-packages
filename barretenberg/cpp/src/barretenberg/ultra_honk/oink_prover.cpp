@@ -17,6 +17,11 @@ template <IsUltraFlavor Flavor> OinkProverOutput<Flavor> OinkProver<Flavor>::pro
     // Compute first three wire commitments
     execute_wire_commitments_round();
 
+    // Prepare for the ZK Sumcheck
+    if constexpr (FlavorHasZK<Flavor>) {
+        execute_zk_sumcheck_preparation_round();
+    }
+
     // Compute sorted list accumulator and commitment
     execute_sorted_list_accumulator_round();
 
@@ -96,6 +101,25 @@ template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_wire_commitment
     }
 }
 
+template <IsUltraFlavor Flavor>
+void OinkProver<Flavor>::execute_zk_sumcheck_preparation_round()
+    requires FlavorHasZK<Flavor>
+{
+    const auto circuit_size = static_cast<uint32_t>(proving_key.circuit_size);
+    auto multivariate_d(numeric::get_msb(circuit_size));
+    static constexpr size_t LIBRA_UNIVARIATES_LENGTH = Flavor::BATCHED_RELATION_PARTIAL_LENGTH;
+    // Populate Libra univarites
+    for (size_t k = 0; k < multivariate_d; ++k) {
+        // generate random polynomial of required size
+        auto libra_univariate = bb::Univariate<FF, LIBRA_UNIVARIATES_LENGTH>::get_random();
+        proving_key.libra_univariates.emplace_back(libra_univariate);
+    };
+    // Populate evaluation masking scalars
+    static constexpr size_t NUM_ALL_WITNESSES = Flavor::NUM_ALL_WITNESSES;
+    for (size_t k = 0; k < NUM_ALL_WITNESSES; ++k) {
+        proving_key.eval_masking_scalars[k] = FF::random_element();
+    }
+}
 /**
  * @brief Compute sorted witness-table accumulator and commit to the resulting polynomials.
  *
@@ -176,5 +200,6 @@ template <IsUltraFlavor Flavor> typename Flavor::RelationSeparator OinkProver<Fl
 
 template class OinkProver<UltraFlavor>;
 template class OinkProver<MegaFlavor>;
+template class OinkProver<UltraFlavorWithZK>;
 
 } // namespace bb

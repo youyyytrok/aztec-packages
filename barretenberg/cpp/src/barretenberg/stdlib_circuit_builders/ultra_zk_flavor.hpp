@@ -19,5 +19,14 @@ class UltraFlavorWithZK : public bb::UltraFlavor {
     using SumcheckTupleOfTuplesOfUnivariates = decltype(create_zk_sumcheck_tuple_of_tuples_of_univariates<Relations>());
     // Re-define ExtendedEdges to account for the incremented MAX_PARTIAL_RELATION_LENGTH
     using ExtendedEdges = ProverUnivariates<MAX_PARTIAL_RELATION_LENGTH>;
+
+    // Add masking polynomials to the proving key
+    class ProvingKey : public bb::UltraFlavor::ProvingKey {
+      public:
+        // Add extra features here
+        std::array<FF, NUM_ALL_WITNESSES> eval_masking_scalars;
+        std::vector<bb::Univariate<FF, BATCHED_RELATION_PARTIAL_LENGTH>> libra_univariates;
+        using UltraFlavor::ProvingKey::ProvingKey;
+    };
 };
 } // namespace bb

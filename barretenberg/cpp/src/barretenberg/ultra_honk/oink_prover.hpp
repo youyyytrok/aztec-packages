@@ -21,8 +21,15 @@
 
 #include "barretenberg/stdlib_circuit_builders/mega_flavor.hpp"
 #include "barretenberg/stdlib_circuit_builders/ultra_flavor.hpp"
+#include "barretenberg/stdlib_circuit_builders/ultra_zk_flavor.hpp"
 #include "barretenberg/transcript/transcript.hpp"
-
+// FEELS HACKY
+template <typename T>
+concept FlavorHasZK = requires {
+    {
+        T::HasZK
+    } -> std::convertible_to<bool>;
+} && T::HasZK;
 namespace bb {
 template <IsUltraFlavor Flavor> struct OinkProverOutput {
     typename Flavor::ProvingKey proving_key;
@@ -67,6 +74,8 @@ template <IsUltraFlavor Flavor> class OinkProver {
     OinkProverOutput<Flavor> prove();
     void execute_preamble_round();
     void execute_wire_commitments_round();
+    void execute_zk_sumcheck_preparation_round()
+        requires FlavorHasZK<Flavor>;
     void execute_sorted_list_accumulator_round();
     void execute_log_derivative_inverse_round();
     void execute_grand_product_computation_round();
