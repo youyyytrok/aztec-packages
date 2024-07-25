@@ -5,7 +5,14 @@
 #include "barretenberg/relations/relation_parameters.hpp"
 #include "barretenberg/stdlib_circuit_builders/mega_flavor.hpp"
 #include "barretenberg/stdlib_circuit_builders/ultra_flavor.hpp"
-
+#include "barretenberg/stdlib_circuit_builders/ultra_zk_flavor.hpp"
+// FEELS HACKY
+template <typename T>
+concept FlavorHasZK = requires {
+    {
+        T::HasZK
+    } -> std::convertible_to<bool>;
+} && T::HasZK;
 namespace bb {
 
 template <IsUltraFlavor Flavor> struct OinkOutput {
@@ -54,6 +61,9 @@ template <IsUltraFlavor Flavor> class OinkVerifier {
     void execute_preamble_round();
 
     void execute_wire_commitments_round();
+
+    void execute_zk_sumcheck_preparation_round()
+        requires FlavorHasZK<Flavor>;
 
     void execute_sorted_list_accumulator_round();
 

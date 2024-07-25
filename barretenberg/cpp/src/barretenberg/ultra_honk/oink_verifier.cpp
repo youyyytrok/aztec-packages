@@ -13,6 +13,10 @@ template <IsUltraFlavor Flavor> OinkOutput<Flavor> OinkVerifier<Flavor>::verify(
     // Execute the Verifier rounds
     execute_preamble_round();
     execute_wire_commitments_round();
+    // Prepare for the ZK Sumcheck
+    if constexpr (FlavorHasZK<Flavor>) {
+        execute_zk_sumcheck_preparation_round();
+    }
     execute_sorted_list_accumulator_round();
     execute_log_derivative_inverse_round();
     execute_grand_product_computation_round();
@@ -72,6 +76,27 @@ template <IsUltraFlavor Flavor> void OinkVerifier<Flavor>::execute_wire_commitme
              zip_view(witness_comms.get_databus_entities(), comm_labels.get_databus_entities())) {
             commitment = transcript->template receive_from_prover<Commitment>(domain_separator + label);
         }
+    }
+}
+
+template <IsUltraFlavor Flavor>
+void OinkVerifier<Flavor>::execute_zk_sumcheck_preparation_round()
+    requires FlavorHasZK<Flavor>
+{
+    // Place commitments to Libra Univariates to the transcript
+    const size_t log_circuit_size = static_cast<size_t>(numeric::get_msb(key->circuit_size));
+
+    using Commitment = Flavor::Curve::AffineElement;
+    Commitment commitment;
+    for (size_t k = 0; k < log_circuit_size; ++k) {
+        commitment = transcript->template receive_from_prover<Commitment>(domain_separator + "Libra:Commitment" +
+                                                                          std::to_string(k));
+    };
+    // Place commitments to Evaluation Masking Scalars to the transcript
+    static constexpr size_t NUM_ALL_WITNESSES = Flavor::NUM_ALL_WITNESSES;
+    for (size_t k = 0; k < NUM_ALL_WITNESSES; ++k) {
+        commitment = transcript->template receive_from_prover<Commitment>(
+            domain_separator + "Libra:eval:masking:scalar" + std::to_string(k));
     }
 }
 
@@ -149,5 +174,6 @@ template <IsUltraFlavor Flavor> typename Flavor::RelationSeparator OinkVerifier<
 
 template class OinkVerifier<UltraFlavor>;
 template class OinkVerifier<MegaFlavor>;
+template class OinkVerifier<UltraFlavorWithZK>;
 
 } // namespace bb

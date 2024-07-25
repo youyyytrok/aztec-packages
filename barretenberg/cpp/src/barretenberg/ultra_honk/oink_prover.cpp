@@ -107,17 +107,35 @@ void OinkProver<Flavor>::execute_zk_sumcheck_preparation_round()
 {
     const auto circuit_size = static_cast<uint32_t>(proving_key.circuit_size);
     auto multivariate_d(numeric::get_msb(circuit_size));
+    using Commitment = Flavor::Curve::AffineElement;
     static constexpr size_t LIBRA_UNIVARIATES_LENGTH = Flavor::BATCHED_RELATION_PARTIAL_LENGTH;
-    // Populate Libra univarites
+    // Populate Libra univarites and commit to them
     for (size_t k = 0; k < multivariate_d; ++k) {
-        // generate random polynomial of required size
+        // generate random polynomial of the size required by Flavor
         auto libra_univariate = bb::Univariate<FF, LIBRA_UNIVARIATES_LENGTH>::get_random();
         proving_key.libra_univariates.emplace_back(libra_univariate);
+        //?? Should I replace libra_univariate with proving_key.libra_univariates[k] below
+        Commitment current_libra_commitment = commitment_key->commit(libra_univariate);
+        transcript->send_to_verifier("Libra:Commitment" + std::to_string(k), current_libra_commitment);
     };
-    // Populate evaluation masking scalars
+    // Populate evaluation masking scalars and commit to them
+    // Commit to the first span obtained from proving_key.eval_masking_scalars[0]
+    // and obtain other commitments by multiplying the first by the scalar
+    // proving_key.eval_masking_scalars[k]/proving_key.eval_masking_scalars[0]
     static constexpr size_t NUM_ALL_WITNESSES = Flavor::NUM_ALL_WITNESSES;
-    for (size_t k = 0; k < NUM_ALL_WITNESSES; ++k) {
+
+    proving_key.eval_masking_scalars[0] = FF::random_element();
+    FF masking_scalar = proving_key.eval_masking_scalars[0];
+    std::vector<FF> masking_vector(circuit_size);
+    std::fill(masking_vector.begin(), masking_vector.end(), masking_scalar);
+    std::span<FF> masking_span(masking_vector);
+    Commitment eval_masking_commitment = commitment_key->commit(masking_span);
+    for (size_t k = 1; k < NUM_ALL_WITNESSES; ++k) {
         proving_key.eval_masking_scalars[k] = FF::random_element();
+        // commit to eval_masking_scalars (as to multilinear polys in d variables), add to transcript
+        FF running_scalar = proving_key.eval_masking_scalars[k] / masking_scalar;
+        transcript->send_to_verifier("Libra:eval:masking:scalar" + std::to_string(k),
+                                     eval_masking_commitment * running_scalar);
     }
 }
 /**
