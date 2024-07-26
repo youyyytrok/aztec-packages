@@ -61,9 +61,17 @@ template <typename Flavor> bool UltraVerifier_<Flavor>::verify_proof(const HonkP
     const size_t log_circuit_size = static_cast<size_t>(numeric::get_msb(key->circuit_size));
     auto sumcheck = SumcheckVerifier<Flavor>(log_circuit_size, transcript);
 
+    FF challenge_factor;
+
     auto gate_challenges = std::vector<FF>(log_circuit_size);
     for (size_t idx = 0; idx < log_circuit_size; idx++) {
         gate_challenges[idx] = transcript->template get_challenge<FF>("Sumcheck:gate_challenge_" + std::to_string(idx));
+        if constexpr (Flavor::HasZK) {
+            challenge_factor = gate_challenges[idx] * (FF(1) - gate_challenges[idx]);
+            key->challenge_factor = challenge_factor;
+        }
+    }
+    if constexpr (Flavor::HasZK) {
     }
     auto [multivariate_challenge, claimed_evaluations, sumcheck_verified] =
         sumcheck.verify(relation_parameters, alphas, gate_challenges);
@@ -72,6 +80,16 @@ template <typename Flavor> bool UltraVerifier_<Flavor>::verify_proof(const HonkP
     if (sumcheck_verified.has_value() && !sumcheck_verified.value()) {
         info("Sumcheck verification failed.");
         return false;
+    }
+
+    // Modify commitments.get_all_witnesses()[k] by adding \sum u_i (1 - u_i) * eval_masking_commitment[k]
+    if constexpr (Flavor::HasZK) {
+        // VerifierCommitments eval_masking_commitments{ key };
+        auto eval_masking_commitments = key->eval_masking_commitments;
+        for (auto [witness_commitment, eval_masking_commitment] :
+             zip_view(commitments.get_all_witnesses(), eval_masking_commitments)) {
+            witness_commitment = witness_commitment + eval_masking_commitment * key->challenge_factor;
+        }
     }
 
     // Execute ZeroMorph rounds to produce an opening claim and verify it with a univariate PCS. See
@@ -91,5 +109,6 @@ template <typename Flavor> bool UltraVerifier_<Flavor>::verify_proof(const HonkP
 
 template class UltraVerifier_<UltraFlavor>;
 template class UltraVerifier_<MegaFlavor>;
+template class UltraVerifier_<UltraFlavorWithZK>;
 
 } // namespace bb

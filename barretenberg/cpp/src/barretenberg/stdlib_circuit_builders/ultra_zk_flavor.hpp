@@ -28,5 +28,13 @@ class UltraFlavorWithZK : public bb::UltraFlavor {
         std::vector<bb::Univariate<FF, BATCHED_RELATION_PARTIAL_LENGTH>> libra_univariates;
         using UltraFlavor::ProvingKey::ProvingKey;
     };
+
+    class VerificationKey : public bb::UltraFlavor::VerificationKey {
+      public:
+        std::array<Commitment, NUM_ALL_WITNESSES> eval_masking_commitments;
+        FF challenge_factor;
+
+        using UltraFlavor::VerificationKey::VerificationKey;
+    };
 };
 } // namespace bb

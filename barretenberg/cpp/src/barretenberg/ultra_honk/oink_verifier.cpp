@@ -95,8 +95,9 @@ void OinkVerifier<Flavor>::execute_zk_sumcheck_preparation_round()
     // Place commitments to Evaluation Masking Scalars to the transcript
     static constexpr size_t NUM_ALL_WITNESSES = Flavor::NUM_ALL_WITNESSES;
     for (size_t k = 0; k < NUM_ALL_WITNESSES; ++k) {
-        commitment = transcript->template receive_from_prover<Commitment>(
-            domain_separator + "Libra:eval:masking:scalar" + std::to_string(k));
+        commitment = transcript->template receive_from_prover<Commitment>(domain_separator + "Eval:masking:commitment" +
+                                                                          std::to_string(k));
+        key->eval_masking_commitments[k] = commitment;
     }
 }
 

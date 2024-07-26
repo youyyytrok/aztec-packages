@@ -3,6 +3,7 @@
 #include "barretenberg/srs/global_crs.hpp"
 #include "barretenberg/stdlib_circuit_builders/mega_flavor.hpp"
 #include "barretenberg/stdlib_circuit_builders/ultra_flavor.hpp"
+#include "barretenberg/stdlib_circuit_builders/ultra_zk_flavor.hpp"
 #include "barretenberg/sumcheck/sumcheck.hpp"
 
 namespace bb {
@@ -31,5 +32,6 @@ template <typename Flavor> class UltraVerifier_ {
 
 using UltraVerifier = UltraVerifier_<UltraFlavor>;
 using MegaVerifier = UltraVerifier_<MegaFlavor>;
+using UltraZKVerifier = UltraVerifier_<UltraFlavorWithZK>;
 
 } // namespace bb

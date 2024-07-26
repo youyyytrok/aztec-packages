@@ -134,7 +134,7 @@ void OinkProver<Flavor>::execute_zk_sumcheck_preparation_round()
         proving_key.eval_masking_scalars[k] = FF::random_element();
         // commit to eval_masking_scalars (as to multilinear polys in d variables), add to transcript
         FF running_scalar = proving_key.eval_masking_scalars[k] / masking_scalar;
-        transcript->send_to_verifier("Libra:eval:masking:scalar" + std::to_string(k),
+        transcript->send_to_verifier("Eval:masking:commitment" + std::to_string(k),
                                      eval_masking_commitment * running_scalar);
     }
 }
