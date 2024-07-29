@@ -92,12 +92,13 @@ void OinkVerifier<Flavor>::execute_zk_sumcheck_preparation_round()
         commitment = transcript->template receive_from_prover<Commitment>(domain_separator + "Libra:Commitment" +
                                                                           std::to_string(k));
     };
+    key->eval_masking_unshifted_commitments.reserve(Flavor::NUM_ALL_WITNESS_ENTITIES);
     // Place commitments to Evaluation Masking Scalars to the transcript
     static constexpr size_t NUM_ALL_WITNESS_ENTITIES = Flavor::NUM_ALL_WITNESS_ENTITIES;
     for (size_t k = 0; k < NUM_ALL_WITNESS_ENTITIES; ++k) {
         commitment = transcript->template receive_from_prover<Commitment>(domain_separator + "Eval:masking:commitment" +
                                                                           std::to_string(k));
-        key->eval_masking_commitments[k] = commitment;
+        key->eval_masking_unshifted_commitments.emplace_back(commitment);
     }
 }
 

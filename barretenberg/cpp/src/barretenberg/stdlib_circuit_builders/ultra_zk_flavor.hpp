@@ -40,7 +40,9 @@ class UltraFlavorWithZK : public bb::UltraFlavor {
 
     class VerificationKey : public bb::UltraFlavor::VerificationKey {
       public:
-        std::array<Commitment, NUM_ALL_WITNESS_ENTITIES> eval_masking_commitments;
+        // don't know how to turn them into arrays and keep compatible with ZM verifier
+        std::vector<Commitment> eval_masking_unshifted_commitments;
+        std::vector<Commitment> eval_masking_shifted_commitments;
         FF challenge_factor;
 
         using UltraFlavor::VerificationKey::VerificationKey;

@@ -727,17 +727,22 @@ template <typename Curve> class ZeroMorphVerifier_ {
      * @return VerifierAccumulator Inputs to the final PCS verification check that will be accumulated
      */
     template <typename Transcript>
-    static OpeningClaim<Curve> verify(FF circuit_size,
-                                      RefSpan<Commitment> unshifted_commitments,
-                                      RefSpan<Commitment> to_be_shifted_commitments,
-                                      RefSpan<FF> unshifted_evaluations,
-                                      RefSpan<FF> shifted_evaluations,
-                                      std::span<FF> multivariate_challenge,
-                                      const Commitment& g1_identity,
-                                      const std::shared_ptr<Transcript>& transcript,
-                                      const std::vector<RefVector<Commitment>>& concatenation_group_commitments = {},
-                                      RefSpan<FF> concatenated_evaluations = {})
+    static OpeningClaim<Curve> verify(
+        FF circuit_size,
+        RefSpan<Commitment> unshifted_commitments,
+        RefSpan<Commitment> to_be_shifted_commitments,
+        RefSpan<FF> unshifted_evaluations,
+        RefSpan<FF> shifted_evaluations,
+        std::span<FF> multivariate_challenge,
+        const Commitment& g1_identity,
+        const std::shared_ptr<Transcript>& transcript,
+        const std::vector<RefVector<Commitment>>& concatenation_group_commitments = {},
+        RefSpan<FF> concatenated_evaluations = {},
+        std::optional<std::vector<Commitment>> unshifted_masking_commitments = std::nullopt)
     {
+        if (unshifted_masking_commitments.has_value()) {
+            info(unshifted_masking_commitments.value().size());
+        };
         FF log_N;
         // TODO(https://github.com/AztecProtocol/barretenberg/issues/1039): Connect witness log_N to circuit size
         if constexpr (Curve::is_stdlib_type) {
