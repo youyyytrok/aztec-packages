@@ -71,8 +71,7 @@ template <typename Flavor> bool UltraVerifier_<Flavor>::verify_proof(const HonkP
             key->challenge_factor = challenge_factor;
         }
     }
-    if constexpr (Flavor::HasZK) {
-    }
+
     auto [multivariate_challenge, claimed_evaluations, sumcheck_verified] =
         sumcheck.verify(relation_parameters, alphas, gate_challenges);
 
