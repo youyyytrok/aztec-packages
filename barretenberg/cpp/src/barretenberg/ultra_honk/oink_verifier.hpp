@@ -5,6 +5,7 @@
 #include "barretenberg/relations/relation_parameters.hpp"
 #include "barretenberg/stdlib_circuit_builders/mega_flavor.hpp"
 #include "barretenberg/stdlib_circuit_builders/ultra_flavor.hpp"
+#include "barretenberg/stdlib_circuit_builders/ultra_keccak.hpp"
 #include "barretenberg/stdlib_circuit_builders/ultra_zk_flavor.hpp"
 // FEELS HACKY
 template <typename T>
@@ -13,6 +14,7 @@ concept FlavorHasZK = requires {
         T::HasZK
     } -> std::convertible_to<bool>;
 } && T::HasZK;
+
 namespace bb {
 
 template <IsUltraFlavor Flavor> struct OinkOutput {

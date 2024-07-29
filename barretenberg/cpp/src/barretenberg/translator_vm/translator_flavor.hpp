@@ -79,7 +79,7 @@ class TranslatorFlavor {
     // The total number of witness entities not including shifts.
     static constexpr size_t NUM_WITNESS_ENTITIES = 91;
     // The total number of witnesses including shifts and derived entities.
-    static constexpr size_t NUM_ALL_WITNESSES = 177;
+    static constexpr size_t NUM_ALL_WITNESS_ENTITIES = 177;
 
     using GrandProductRelations = std::tuple<TranslatorPermutationRelation<FF>>;
     // define the tuple of Relations that comprise the Sumcheck relation
@@ -697,7 +697,8 @@ class TranslatorFlavor {
         }
         // get_to_be_shifted is inherited
         auto get_shifted() { return ShiftedEntities<DataType>::get_all(); };
-
+        // this getter is necessary for more uniform zk verifiers
+        auto get_shifted_witnesses() { return ShiftedEntities<DataType>::get_all(); };
         auto get_wires_and_ordered_range_constraints()
         {
             return WitnessEntities<DataType>::get_wires_and_ordered_range_constraints();
@@ -723,7 +724,7 @@ class TranslatorFlavor {
         // Get witness polynomials including shifts. This getter is required by ZK-Sumcheck.
         auto get_all_witnesses()
         {
-            return concatenate(ShiftedEntities<DataType>::get_all(), WitnessEntities<DataType>::get_all());
+            return concatenate(WitnessEntities<DataType>::get_all(), ShiftedEntities<DataType>::get_all());
         };
         // Get all non-witness polynomials. In this case, contains only PrecomputedEntities.
         auto get_non_witnesses() { return PrecomputedEntities<DataType>::get_all(); };

@@ -1,4 +1,5 @@
 #include "barretenberg/ultra_honk/oink_prover.hpp"
+#include "barretenberg/plonk_honk_shared/instance_inspector.hpp"
 #include "barretenberg/relations/logderiv_lookup_relation.hpp"
 
 namespace bb {
@@ -71,9 +72,12 @@ template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_wire_commitment
 {
     // Commit to the first three wire polynomials of the instance
     // We only commit to the fourth wire polynomial after adding memory recordss
-    witness_commitments.w_l = commitment_key->commit(proving_key.polynomials.w_l);
-    witness_commitments.w_r = commitment_key->commit(proving_key.polynomials.w_r);
-    witness_commitments.w_o = commitment_key->commit(proving_key.polynomials.w_o);
+    {
+        BB_OP_COUNT_TIME_NAME("COMMIT::wires");
+        witness_commitments.w_l = commitment_key->commit(proving_key.polynomials.w_l);
+        witness_commitments.w_r = commitment_key->commit(proving_key.polynomials.w_r);
+        witness_commitments.w_o = commitment_key->commit(proving_key.polynomials.w_o);
+    }
 
     auto wire_comms = witness_commitments.get_wires();
     auto wire_labels = commitment_labels.get_wires();
@@ -87,7 +91,10 @@ template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_wire_commitment
         for (auto [commitment, polynomial, label] : zip_view(witness_commitments.get_ecc_op_wires(),
                                                              proving_key.polynomials.get_ecc_op_wires(),
                                                              commitment_labels.get_ecc_op_wires())) {
-            commitment = commitment_key->commit(polynomial);
+            {
+                BB_OP_COUNT_TIME_NAME("COMMIT::ecc_op_wires");
+                commitment = commitment_key->commit_sparse(polynomial);
+            }
             transcript->send_to_verifier(domain_separator + label, commitment);
         }
 
@@ -95,7 +102,10 @@ template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_wire_commitment
         for (auto [commitment, polynomial, label] : zip_view(witness_commitments.get_databus_entities(),
                                                              proving_key.polynomials.get_databus_entities(),
                                                              commitment_labels.get_databus_entities())) {
-            commitment = commitment_key->commit(polynomial);
+            {
+                BB_OP_COUNT_TIME_NAME("COMMIT::databus");
+                commitment = commitment_key->commit_sparse(polynomial);
+            }
             transcript->send_to_verifier(domain_separator + label, commitment);
         }
     }
@@ -122,7 +132,7 @@ void OinkProver<Flavor>::execute_zk_sumcheck_preparation_round()
     // Commit to the first span obtained from proving_key.eval_masking_scalars[0]
     // and obtain other commitments by multiplying the first by the scalar
     // proving_key.eval_masking_scalars[k]/proving_key.eval_masking_scalars[0]
-    static constexpr size_t NUM_ALL_WITNESSES = Flavor::NUM_ALL_WITNESSES;
+    static constexpr size_t NUM_ALL_WITNESS_ENTITIES = Flavor::NUM_ALL_WITNESS_ENTITIES;
 
     proving_key.eval_masking_scalars[0] = FF::random_element();
     FF masking_scalar = proving_key.eval_masking_scalars[0];
@@ -130,7 +140,7 @@ void OinkProver<Flavor>::execute_zk_sumcheck_preparation_round()
     std::fill(masking_vector.begin(), masking_vector.end(), masking_scalar);
     std::span<FF> masking_span(masking_vector);
     Commitment eval_masking_commitment = commitment_key->commit(masking_span);
-    for (size_t k = 1; k < NUM_ALL_WITNESSES; ++k) {
+    for (size_t k = 1; k < NUM_ALL_WITNESS_ENTITIES; ++k) {
         proving_key.eval_masking_scalars[k] = FF::random_element();
         // commit to eval_masking_scalars (as to multilinear polys in d variables), add to transcript
         FF running_scalar = proving_key.eval_masking_scalars[k] / masking_scalar;
@@ -155,9 +165,15 @@ template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_sorted_list_acc
         relation_parameters.eta, relation_parameters.eta_two, relation_parameters.eta_three);
 
     // Commit to lookup argument polynomials and the finalized (i.e. with memory records) fourth wire polynomial
-    witness_commitments.lookup_read_counts = commitment_key->commit(proving_key.polynomials.lookup_read_counts);
-    witness_commitments.lookup_read_tags = commitment_key->commit(proving_key.polynomials.lookup_read_tags);
-    witness_commitments.w_4 = commitment_key->commit(proving_key.polynomials.w_4);
+    {
+        BB_OP_COUNT_TIME_NAME("COMMIT::lookup_counts_tags");
+        witness_commitments.lookup_read_counts = commitment_key->commit(proving_key.polynomials.lookup_read_counts);
+        witness_commitments.lookup_read_tags = commitment_key->commit(proving_key.polynomials.lookup_read_tags);
+    }
+    {
+        BB_OP_COUNT_TIME_NAME("COMMIT::wires");
+        witness_commitments.w_4 = commitment_key->commit(proving_key.polynomials.w_4);
+    }
 
     transcript->send_to_verifier(domain_separator + commitment_labels.lookup_read_counts,
                                  witness_commitments.lookup_read_counts);
@@ -179,18 +195,24 @@ template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_log_derivative_
     // Compute the inverses used in log-derivative lookup relations
     proving_key.compute_logderivative_inverses(relation_parameters);
 
-    witness_commitments.lookup_inverses = commitment_key->commit(proving_key.polynomials.lookup_inverses);
+    {
+        BB_OP_COUNT_TIME_NAME("COMMIT::lookup_inverses");
+        witness_commitments.lookup_inverses = commitment_key->commit(proving_key.polynomials.lookup_inverses);
+    }
     transcript->send_to_verifier(domain_separator + commitment_labels.lookup_inverses,
                                  witness_commitments.lookup_inverses);
 
     // If Mega, commit to the databus inverse polynomials and send
     if constexpr (IsGoblinFlavor<Flavor>) {
-        witness_commitments.calldata_inverses = commitment_key->commit(proving_key.polynomials.calldata_inverses);
-        witness_commitments.return_data_inverses = commitment_key->commit(proving_key.polynomials.return_data_inverses);
-        transcript->send_to_verifier(domain_separator + commitment_labels.calldata_inverses,
-                                     witness_commitments.calldata_inverses);
-        transcript->send_to_verifier(domain_separator + commitment_labels.return_data_inverses,
-                                     witness_commitments.return_data_inverses);
+        for (auto [commitment, polynomial, label] : zip_view(witness_commitments.get_databus_inverses(),
+                                                             proving_key.polynomials.get_databus_inverses(),
+                                                             commitment_labels.get_databus_inverses())) {
+            {
+                BB_OP_COUNT_TIME_NAME("COMMIT::databus_inverses");
+                commitment = commitment_key->commit_sparse(polynomial);
+            }
+            transcript->send_to_verifier(domain_separator + label, commitment);
+        }
     }
 }
 
@@ -202,8 +224,10 @@ template <IsUltraFlavor Flavor> void OinkProver<Flavor>::execute_grand_product_c
 {
     proving_key.compute_grand_product_polynomials(relation_parameters);
 
-    witness_commitments.z_perm = commitment_key->commit(proving_key.polynomials.z_perm);
-
+    {
+        BB_OP_COUNT_TIME_NAME("COMMIT::z_perm");
+        witness_commitments.z_perm = commitment_key->commit(proving_key.polynomials.z_perm);
+    }
     transcript->send_to_verifier(domain_separator + commitment_labels.z_perm, witness_commitments.z_perm);
 }
 
@@ -217,6 +241,7 @@ template <IsUltraFlavor Flavor> typename Flavor::RelationSeparator OinkProver<Fl
 }
 
 template class OinkProver<UltraFlavor>;
+template class OinkProver<UltraKeccakFlavor>;
 template class OinkProver<MegaFlavor>;
 template class OinkProver<UltraFlavorWithZK>;
 

@@ -93,8 +93,8 @@ void OinkVerifier<Flavor>::execute_zk_sumcheck_preparation_round()
                                                                           std::to_string(k));
     };
     // Place commitments to Evaluation Masking Scalars to the transcript
-    static constexpr size_t NUM_ALL_WITNESSES = Flavor::NUM_ALL_WITNESSES;
-    for (size_t k = 0; k < NUM_ALL_WITNESSES; ++k) {
+    static constexpr size_t NUM_ALL_WITNESS_ENTITIES = Flavor::NUM_ALL_WITNESS_ENTITIES;
+    for (size_t k = 0; k < NUM_ALL_WITNESS_ENTITIES; ++k) {
         commitment = transcript->template receive_from_prover<Commitment>(domain_separator + "Eval:masking:commitment" +
                                                                           std::to_string(k));
         key->eval_masking_commitments[k] = commitment;
@@ -138,10 +138,10 @@ template <IsUltraFlavor Flavor> void OinkVerifier<Flavor>::execute_log_derivativ
 
     // If Goblin (i.e. using DataBus) receive commitments to log-deriv inverses polynomials
     if constexpr (IsGoblinFlavor<Flavor>) {
-        witness_comms.calldata_inverses =
-            transcript->template receive_from_prover<Commitment>(domain_separator + comm_labels.calldata_inverses);
-        witness_comms.return_data_inverses =
-            transcript->template receive_from_prover<Commitment>(domain_separator + comm_labels.return_data_inverses);
+        for (auto [commitment, label] :
+             zip_view(witness_comms.get_databus_inverses(), comm_labels.get_databus_inverses())) {
+            commitment = transcript->template receive_from_prover<Commitment>(domain_separator + label);
+        }
     }
 }
 
@@ -174,6 +174,7 @@ template <IsUltraFlavor Flavor> typename Flavor::RelationSeparator OinkVerifier<
 }
 
 template class OinkVerifier<UltraFlavor>;
+template class OinkVerifier<UltraKeccakFlavor>;
 template class OinkVerifier<MegaFlavor>;
 template class OinkVerifier<UltraFlavorWithZK>;
 

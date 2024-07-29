@@ -31,6 +31,7 @@ template <typename Flavor> class UltraVerifier_ {
 };
 
 using UltraVerifier = UltraVerifier_<UltraFlavor>;
+using UltraKeccakVerifier = UltraVerifier_<UltraKeccakFlavor>;
 using MegaVerifier = UltraVerifier_<MegaFlavor>;
 using UltraZKVerifier = UltraVerifier_<UltraFlavorWithZK>;
 
