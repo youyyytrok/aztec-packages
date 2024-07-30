@@ -92,13 +92,24 @@ void OinkVerifier<Flavor>::execute_zk_sumcheck_preparation_round()
         commitment = transcript->template receive_from_prover<Commitment>(domain_separator + "Libra:Commitment" +
                                                                           std::to_string(k));
     };
-    key->eval_masking_unshifted_commitments.reserve(Flavor::NUM_ALL_WITNESS_ENTITIES);
+    // Populate commitments to unshifted witness polynomials
+    auto unshifted_masking_commitments = key->unshifted_eval_masking_commitments;
+    size_t idx = 0;
     // Place commitments to Evaluation Masking Scalars to the transcript
-    static constexpr size_t NUM_ALL_WITNESS_ENTITIES = Flavor::NUM_ALL_WITNESS_ENTITIES;
-    for (size_t k = 0; k < NUM_ALL_WITNESS_ENTITIES; ++k) {
+    for (auto unshifted_masking_commitment : unshifted_masking_commitments) {
         commitment = transcript->template receive_from_prover<Commitment>(domain_separator + "Eval:masking:commitment" +
-                                                                          std::to_string(k));
-        key->eval_masking_unshifted_commitments.emplace_back(commitment);
+                                                                          std::to_string(idx));
+        unshifted_masking_commitment = commitment;
+        ++idx;
+    }
+    // Populate commitments to shifted witness polynomials
+    auto shifted_masking_commitments = key->shifted_eval_masking_commitments;
+    // Place commitments to Evaluation Masking Scalars to the transcript
+    for (auto shifted_masking_commitment : shifted_masking_commitments) {
+        commitment = transcript->template receive_from_prover<Commitment>(domain_separator + "Eval:masking:commitment" +
+                                                                          std::to_string(idx));
+        shifted_masking_commitment = commitment;
+        ++idx;
     }
 }
 

@@ -28,6 +28,7 @@ class UltraFlavorWithZK : public bb::UltraFlavor {
     using SumcheckTupleOfTuplesOfUnivariates = decltype(create_zk_sumcheck_tuple_of_tuples_of_univariates<Relations>());
     // Re-define ExtendedEdges to account for the incremented MAX_PARTIAL_RELATION_LENGTH
     using ExtendedEdges = ProverUnivariates<MAX_PARTIAL_RELATION_LENGTH>;
+    static constexpr size_t NUM_SHIFTED_WITNESSES = NUM_ALL_WITNESS_ENTITIES - NUM_WITNESS_ENTITIES;
 
     // Add masking polynomials to the proving key
     class ProvingKey : public bb::UltraFlavor::ProvingKey {
@@ -41,8 +42,8 @@ class UltraFlavorWithZK : public bb::UltraFlavor {
     class VerificationKey : public bb::UltraFlavor::VerificationKey {
       public:
         // don't know how to turn them into arrays and keep compatible with ZM verifier
-        std::vector<Commitment> eval_masking_unshifted_commitments;
-        std::vector<Commitment> eval_masking_shifted_commitments;
+        std::array<Commitment, NUM_WITNESS_ENTITIES> unshifted_eval_masking_commitments;
+        std::array<Commitment, NUM_SHIFTED_WITNESSES> shifted_eval_masking_commitments;
         FF challenge_factor;
 
         using UltraFlavor::VerificationKey::VerificationKey;

@@ -28,11 +28,6 @@ template <typename Flavor> class UltraVerifier_ {
 
     std::shared_ptr<VerificationKey> key;
     std::shared_ptr<Transcript> transcript;
-    // Helper function to convert std::array to RefSpan
-    template <typename T, std::size_t N> RefSpan<T> arrayToRefSpan(std::array<T, N>& array)
-    {
-        return RefSpan<T>(array, array.size());
-    }
 };
 
 using UltraVerifier = UltraVerifier_<UltraFlavor>;

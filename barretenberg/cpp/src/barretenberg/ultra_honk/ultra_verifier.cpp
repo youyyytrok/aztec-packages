@@ -44,7 +44,10 @@ template <typename Flavor> bool UltraVerifier_<Flavor>::verify_proof(const HonkP
     using FF = typename Flavor::FF;
     using PCS = typename Flavor::PCS;
     using Curve = typename Flavor::Curve;
-    using ZeroMorph = ZeroMorphVerifier_<Curve>;
+    // ZeroMorphVerifier is conditionally templated on Flavor,
+    // i.e. it takes Flavor as an argument when FlavorHasZK is satisfied
+    using ZeroMorph =
+        std::conditional_t<FlavorHasZK<Flavor>, ZeroMorphVerifier_<Curve, Flavor>, ZeroMorphVerifier_<Curve>>;
     using VerifierCommitments = typename Flavor::VerifierCommitments;
 
     transcript = std::make_shared<Transcript>(proof);
@@ -81,41 +84,18 @@ template <typename Flavor> bool UltraVerifier_<Flavor>::verify_proof(const HonkP
         return false;
     }
 
-    // // Modify commitments.get_all_witnesses()[k] by adding \sum u_i (1 - u_i) * eval_masking_commitment[k]
-    // if constexpr (Flavor::HasZK) {
-    //     // VerifierCommitments eval_masking_commitments{ key };
-    //     auto eval_masking_commitments = key->eval_masking_commitments;
-    //     for (auto [witness_commitment, eval_masking_commitment] :
-    //          zip_view(commitments.get_all_witnesses(), eval_masking_commitments)) {
-    //         witness_commitment = witness_commitment + eval_masking_commitment * key->challenge_factor;
-    //     }
-    // }
-
     // Execute ZeroMorph rounds to produce an opening claim and verify it with a univariate PCS. See
     // https://hackmd.io/dlf9xEwhTQyE3hiGbq4FsA?view for a complete description of the unrolled protocol.
     OpeningClaim<Curve> opening_claim;
-    if constexpr (!Flavor::HasZK) {
-        opening_claim = ZeroMorph::verify(key->circuit_size,
-                                          commitments.get_unshifted(),
-                                          commitments.get_to_be_shifted(),
-                                          claimed_evaluations.get_unshifted(),
-                                          claimed_evaluations.get_shifted(),
-                                          multivariate_challenge,
-                                          Commitment::one(),
-                                          transcript);
-    } else {
-        opening_claim = ZeroMorph::verify(key->circuit_size,
-                                          commitments.get_unshifted(),
-                                          commitments.get_to_be_shifted(),
-                                          claimed_evaluations.get_unshifted(),
-                                          claimed_evaluations.get_shifted(),
-                                          multivariate_challenge,
-                                          Commitment::one(),
-                                          transcript,
-                                          {},
-                                          {},
-                                          key->eval_masking_unshifted_commitments);
-    };
+    opening_claim = ZeroMorph::verify(key->circuit_size,
+                                      commitments.get_unshifted(),
+                                      commitments.get_to_be_shifted(),
+                                      claimed_evaluations.get_unshifted(),
+                                      claimed_evaluations.get_shifted(),
+                                      multivariate_challenge,
+                                      Commitment::one(),
+                                      transcript);
+
     auto pairing_points = PCS::reduce_verify(opening_claim, transcript);
     auto pcs_verified = key->pcs_verification_key->pairing_check(pairing_points[0], pairing_points[1]);
     return sumcheck_verified.value() && pcs_verified;

@@ -441,12 +441,13 @@ template <typename Curve> class ZeroMorphProver_ {
     }
 };
 
+struct DefaultType {};
 /**
  * @brief Verifier for ZeroMorph multilinear PCS
  *
  * @tparam Curve - The Curve used to arithmetise ZeroMorph
  */
-template <typename Curve> class ZeroMorphVerifier_ {
+template <typename Curve, typename Flavor = DefaultType> class ZeroMorphVerifier_ {
     using FF = typename Curve::ScalarField;
     using Commitment = typename Curve::AffineElement;
 
@@ -727,22 +728,18 @@ template <typename Curve> class ZeroMorphVerifier_ {
      * @return VerifierAccumulator Inputs to the final PCS verification check that will be accumulated
      */
     template <typename Transcript>
-    static OpeningClaim<Curve> verify(
-        FF circuit_size,
-        RefSpan<Commitment> unshifted_commitments,
-        RefSpan<Commitment> to_be_shifted_commitments,
-        RefSpan<FF> unshifted_evaluations,
-        RefSpan<FF> shifted_evaluations,
-        std::span<FF> multivariate_challenge,
-        const Commitment& g1_identity,
-        const std::shared_ptr<Transcript>& transcript,
-        const std::vector<RefVector<Commitment>>& concatenation_group_commitments = {},
-        RefSpan<FF> concatenated_evaluations = {},
-        std::optional<std::vector<Commitment>> unshifted_masking_commitments = std::nullopt)
+    static OpeningClaim<Curve> verify(FF circuit_size,
+                                      RefSpan<Commitment> unshifted_commitments,
+                                      RefSpan<Commitment> to_be_shifted_commitments,
+                                      RefSpan<FF> unshifted_evaluations,
+                                      RefSpan<FF> shifted_evaluations,
+                                      std::span<FF> multivariate_challenge,
+                                      const Commitment& g1_identity,
+                                      const std::shared_ptr<Transcript>& transcript,
+                                      const std::vector<RefVector<Commitment>>& concatenation_group_commitments = {},
+                                      RefSpan<FF> concatenated_evaluations = {})
     {
-        if (unshifted_masking_commitments.has_value()) {
-            info(unshifted_masking_commitments.value().size());
-        };
+
         FF log_N;
         // TODO(https://github.com/AztecProtocol/barretenberg/issues/1039): Connect witness log_N to circuit size
         if constexpr (Curve::is_stdlib_type) {
@@ -783,6 +780,34 @@ template <typename Curve> class ZeroMorphVerifier_ {
 
         // Challenges x, z
         auto [x_challenge, z_challenge] = transcript->template get_challenges<FF>("ZM:x", "ZM:z");
+
+        // Correct commitments to witnesses to open ZK Sumcheck claimed evaluations
+        if constexpr (!std::is_same_v<Flavor, DefaultType>) {
+            using VerificationKey = typename Flavor::VerificationKey;
+            std::shared_ptr<VerificationKey> key;
+            auto unshifted_masking_commitments = key->unshifted_eval_masking_commitments;
+            auto shifted_masking_commitments = key->shifted_eval_masking_commitments;
+            static constexpr size_t NUM_UNSHIFTED_WITNESSES = unshifted_masking_commitments.size();
+            static constexpr size_t NUM_SHIFTED_WITNESSES = shifted_masking_commitments.size();
+            // Extract the field \sum_{i=0}^{d-1} u_i * (1-u_i) from the verification key
+            auto challenge_factor = key->challenge_factor;
+            size_t first_witness_idx = unshifted_commitments.size() - NUM_UNSHIFTED_WITNESSES;
+            // Correct the unshifted witness commitments
+            for (size_t idx = first_witness_idx; idx < unshifted_commitments.size(); idx++) {
+                unshifted_commitments[idx] = unshifted_commitments[idx] +
+                                             unshifted_masking_commitments[idx - first_witness_idx] * challenge_factor;
+            }
+            // to open masked shifted polynomials, we need to adjust the challenge factor
+            challenge_factor = challenge_factor * x_challenge;
+
+            first_witness_idx = to_be_shifted_commitments.size() - NUM_SHIFTED_WITNESSES;
+            // Correct the to be shifted witness commitments
+            for (size_t idx = first_witness_idx; idx < to_be_shifted_commitments.size(); idx++) {
+                to_be_shifted_commitments[idx] =
+                    to_be_shifted_commitments[idx] +
+                    shifted_masking_commitments[idx - first_witness_idx] * challenge_factor;
+            }
+        }
 
         // Compute commitment C_{\zeta_x}
         auto C_zeta_x = compute_C_zeta_x(C_q, C_q_k, y_challenge, x_challenge, log_N, circuit_size);
