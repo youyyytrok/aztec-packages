@@ -2,6 +2,7 @@ import { chromium, firefox, webkit } from "playwright";
 import fs from "fs";
 import { Command } from "commander";
 import { gunzipSync } from "zlib";
+import { decode } from "@msgpack/msgpack";
 import chalk from "chalk";
 import os from "os";
 
@@ -37,27 +38,15 @@ function formatAndPrintLog(message: string): void {
   console.log(formattedMessage);
 }
 
-const readBytecodeFile = (path: string): Uint8Array => {
-  const extension = path.substring(path.lastIndexOf(".") + 1);
-
-  if (extension == "json") {
-    const encodedCircuit = JSON.parse(fs.readFileSync(path, "utf8"));
-    const decompressed = gunzipSync(
-      Uint8Array.from(atob(encodedCircuit.bytecode), (c) => c.charCodeAt(0))
-    );
-    return decompressed;
-  }
-
-  const encodedCircuit = fs.readFileSync(path);
-  const decompressed = gunzipSync(encodedCircuit);
+const readStack = (path: string, numToDrop: number): Uint8Array[] => {
+  const read = fs.readFileSync(path);
+  const unpacked = decode(read.subarray(0, read.length - numToDrop));
+  const decompressed = unpacked
+    .map(gunzipSync)
+    .map((buffer: Buffer) => new Uint8Array(buffer));
+  console.log(`stack read!`);
   return decompressed;
 };
-
-const readWitnessFile = (path: string): Uint8Array => {
-  const buffer = fs.readFileSync(path);
-  return gunzipSync(buffer);
-};
-
 // Set up the command-line interface
 const program = new Command("headless_test");
 program.option("-v, --verbose", "verbose logging");
@@ -76,11 +65,11 @@ program
   .option(
     "-w, --witness-path <path>",
     "Specify the path to the gzip encoded ACIR witness",
-    "./target/witness.gz"
+    "./target/witnesses.msgpack"
   )
   .action(async ({ bytecodePath, witnessPath, recursive }) => {
-    const acir = readBytecodeFile(bytecodePath);
-    const witness = readWitnessFile(witnessPath);
+    const witness = readStack(witnessPath, 0);
+    const acir = readStack(bytecodePath, 1);
     const threads = Math.min(os.cpus().length, 16);
 
     const browsers = { chrome: chromium, firefox: firefox, webkit: webkit };
@@ -99,22 +88,16 @@ program
         page.on("console", (msg) => formatAndPrintLog(msg.text()));
       }
 
+      console.log('going to page');
       await page.goto("http://localhost:8080");
+      console.log('went to page');
 
       const result: boolean = await page.evaluate(
         ([acirData, witnessData, threads]) => {
-          // Convert the input data to Uint8Arrays within the browser context
-          const acirUint8Array = new Uint8Array(acirData as number[]);
-          const witnessUint8Array = new Uint8Array(witnessData as number[]);
-
-          // Call the desired function and return the result
-          return (window as any).runTest(
-            acirUint8Array,
-            witnessUint8Array,
-            threads
-          );
+          console.log("calling runTest");
+          return (window as any).runTest(acirData, witnessData, threads);
         },
-        [Array.from(acir), Array.from(witness), threads]
+        [acir, witness, threads]
       );
 
       await browser.close();

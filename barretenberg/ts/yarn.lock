@@ -27,6 +27,7 @@ __metadata:
   resolution: "@aztec/bb.js@workspace:."
   dependencies:
     "@jest/globals": ^29.4.3
+    "@msgpack/msgpack": ^3.0.0-beta2
     "@types/debug": ^4.1.7
     "@types/detect-node": ^2.0.0
     "@types/jest": ^29.4.0
@@ -866,6 +867,13 @@ __metadata:
   version: 2.0.4
   resolution: "@leichtgewicht/ip-codec@npm:2.0.4"
   checksum: 468de1f04d33de6d300892683d7c8aecbf96d1e2c5fe084f95f816e50a054d45b7c1ebfb141a1447d844b86a948733f6eebd92234da8581c84a1ad4de2946a2d
+  languageName: node
+  linkType: hard
+
+"@msgpack/msgpack@npm:^3.0.0-beta2":
+  version: 3.0.0-beta2
+  resolution: "@msgpack/msgpack@npm:3.0.0-beta2"
+  checksum: d86e5d48146051952d6bea35a6cf733a401cf65ad5614d79689aa48c7076021737ca2c782978dd1b6c0c9c45888b246e379e45ae906179e3a0e8ef4ee6f221c1
   languageName: node
   linkType: hard
 

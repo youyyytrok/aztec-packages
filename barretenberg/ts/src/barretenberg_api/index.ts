@@ -11,6 +11,7 @@ import {
   OutputType,
 } from '../serialize/index.js';
 import { Fr, Fq, Point, Buffer32, Buffer128, Ptr } from '../types/index.js';
+import { encode, decode } from '@msgpack/msgpack';
 
 export class BarretenbergApi {
   constructor(protected wasm: BarretenbergWasmWorker) {}
@@ -531,11 +532,38 @@ export class BarretenbergApi {
     return out as any;
   }
 
+
+  async acirProveAztecClient(acirVec: Uint8Array[], witnessVec: Uint8Array[]): Promise<Uint8Array> {
+    const inArgs = [acirVec, witnessVec].map(serializeBufferable);
+    const outTypes: OutputType[] = [BufferDeserializer()];
+    const result = await this.wasm.callWasmExport(
+      'acir_prove_aztec_client',
+      inArgs,
+      outTypes.map(t => t.SIZE_IN_BYTES),
+    );
+    console.log("wasm export called");
+    const out = result.map((r, i) => outTypes[i].fromBuffer(r));
+    console.log("out created");
+    return out[0];
+  }
+
   async acirProveUltraHonk(acirVec: Uint8Array, witnessVec: Uint8Array): Promise<Uint8Array> {
     const inArgs = [acirVec, witnessVec].map(serializeBufferable);
     const outTypes: OutputType[] = [BufferDeserializer()];
     const result = await this.wasm.callWasmExport(
       'acir_prove_ultra_honk',
+      inArgs,
+      outTypes.map(t => t.SIZE_IN_BYTES),
+    );
+    const out = result.map((r, i) => outTypes[i].fromBuffer(r));
+    return out[0];
+  }
+
+  async acirVerifyAztecClientProof(proofBuf: Uint8Array, vkBuf: Uint8Array): Promise<boolean> {
+    const inArgs = [proofBuf, vkBuf].map(serializeBufferable);
+    const outTypes: OutputType[] = [BoolDeserializer()];
+    const result = await this.wasm.callWasmExport(
+      'acir_verify_aztec_client_proof',
       inArgs,
       outTypes.map(t => t.SIZE_IN_BYTES),
     );
@@ -1108,6 +1136,21 @@ export class BarretenbergApiSync {
       outTypes.map(t => t.SIZE_IN_BYTES),
     );
     const out = result.map((r, i) => outTypes[i].fromBuffer(r));
+    return out[0];
+  }
+
+  acirProveAztecClient(acirVec: Uint8Array, witnessVec: Uint8Array): Uint8Array {
+    console.log("~~~SYNC VERSION~~~");
+    const inArgs = [acirVec, witnessVec].map(serializeBufferable);
+    const outTypes: OutputType[] = [BufferDeserializer()];
+    const result = this.wasm.callWasmExport(
+      'acir_prove_aztec_client',
+      inArgs,
+      outTypes.map(t => t.SIZE_IN_BYTES),
+    );
+    console.log("wasm export called");
+    const out = result.map((r, i) => outTypes[i].fromBuffer(r));
+    console.log("out created");
     return out[0];
   }
 

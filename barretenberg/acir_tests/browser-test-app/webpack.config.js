@@ -17,6 +17,10 @@ export default {
         test: /\.tsx?$/,
         use: [{ loader: "ts-loader" }],
       },
+      {
+        test: /\.msgpack?$/,
+        use: [{loader: "raw-loader"}]
+      }
     ],
   },
   output: {

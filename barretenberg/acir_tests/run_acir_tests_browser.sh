@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-set -em
+set -emx
+
+echo "Calling run_acir_tests_browser.sh"
 
 cleanup() {
   lsof -i ":8080" | awk 'NR>1 {print $2}' | xargs kill -9

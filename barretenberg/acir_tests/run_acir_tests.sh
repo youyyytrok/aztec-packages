@@ -4,6 +4,8 @@
 #   VERBOSE: to enable logging for each test.
 set -eu
 
+echo "Calling run_acir_tests.sh"
+
 # Catch when running in parallel
 error_file="/tmp/error.$$"
 pids=()
@@ -21,6 +23,8 @@ TEST_NAMES=("$@")
 HARDWARE_CONCURRENCY=${HARDWARE_CONCURRENCY:-16}
 
 FLOW_SCRIPT=$(realpath ./flows/${FLOW}.sh)
+
+echo "FlOW_SCRIPT is ${FLOW_SCRIPT}"
 
 if [ -f $BIN ]; then
     BIN=$(realpath $BIN)

@@ -6,6 +6,7 @@ export {
   BarretenbergVerifier,
   UltraPlonkBackend,
   UltraHonkBackend,
+  AztecClientBackend,
 } from './barretenberg/index.js';
 export { RawBuffer, Fr } from './types/index.js';
 export { splitHonkProof, reconstructHonkProof } from './proof/index.js';

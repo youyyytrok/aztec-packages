@@ -59,6 +59,7 @@
   },
   "devDependencies": {
     "@jest/globals": "^29.4.3",
+    "@msgpack/msgpack": "^3.0.0-beta2",
     "@types/debug": "^4.1.7",
     "@types/detect-node": "^2.0.0",
     "@types/jest": "^29.4.0",

@@ -178,3 +178,51 @@ export class UltraHonkBackend {
     await this.api.destroy();
   }
 }
+
+export class AztecClientBackend {
+  // These type assertions are used so that we don't
+  // have to initialize `api` in the constructor.
+  // These are initialized asynchronously in the `init` function,
+  // constructors cannot be asynchronous which is why we do this.
+
+  protected api!: Barretenberg;
+
+  constructor(protected acirMsgpack: Uint8Array[], protected options: BackendOptions = { threads: 1 }) {}
+
+  /** @ignore */
+  async instantiate(): Promise<void> {
+    if (!this.api) {
+      const api = await Barretenberg.new(this.options);
+      console.log("created new api")
+      await api.initSRSForCircuitSize(1<<19); // WORKTODO
+      console.log("inited SRS");
+      this.api = api;
+    }
+  }
+
+  async generateProof(witnessMsgpack: Uint8Array[]): Promise<Uint8Array> {
+    console.log("entered generateProof");
+    await this.instantiate();
+    console.log("tried to instantiate");
+    return this.api.acirProveAztecClient(this.acirMsgpack, witnessMsgpack);
+  }
+
+  // async verifyProof(proof: Uint8Array): Promise<boolean> {
+  //   await this.instantiate();
+  //   const vkBuf = await this.api.acirWriteVkUltraHonk(this.acirMsgpack);
+
+  //   return await this.api.acirVerifyAztecClientProof(proof, new RawBuffer(vkBuf));
+  // }
+
+  // async getVerificationKey(): Promise<Uint8Array> {
+  //   await this.instantiate();
+  //   return await this.api.acirWriteVkUltraHonk(this.acirMsgpack);
+  // }
+
+  async destroy(): Promise<void> {
+    if (!this.api) {
+      return;
+    }
+    await this.api.destroy();
+  }
+}
