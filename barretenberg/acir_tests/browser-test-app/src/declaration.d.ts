@@ -1,5 +1,5 @@
 // declaration.d.ts
-declare module '*.msgpack' {
-    const value: ArrayBuffer;
+declare module '*.b64' {
+    const value: string;
     export default value;
 }

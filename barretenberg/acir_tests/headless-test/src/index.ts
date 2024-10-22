@@ -38,23 +38,19 @@ function formatAndPrintLog(message: string): void {
   console.log(formattedMessage);
 }
 
-const readStack = (path: string, numToDrop: number): Uint8Array[] => {
-  const read = fs.readFileSync(path);
-  console.log("read file");
-  const unpacked = decode(read.subarray(0, read.length - numToDrop)) as Uint8Array[];
-  console.log("unpacked file");
-  const decompressed = unpacked
-  .map((arr: Uint8Array)=>(ungzip(arr))) as Uint8Array[]
-  console.log(`stack read!`);
+function readStack(bytecodePath: string, numToDrop: number) {
+  const encodedCircuit = fs.readFileSync(bytecodePath);
+  const unpacked = decode(encodedCircuit.subarray(0, encodedCircuit.length - numToDrop)) as Uint8Array[];
+  const decompressed = unpacked.map((arr: Uint8Array) => ungzip(arr));
   return decompressed;
-};
+}
 // Set up the command-line interface
 const program = new Command("headless_test");
 program.option("-v, --verbose", "verbose logging");
 program.option("-c, --crs-path <path>", "ignored (here for compatibility)");
 
 program
-  .command("client_ivc_prove_output_all")
+  .command("prove_and_verify")
   .description(
     "Generate a proof and verify it. Process exits with success or failure code."
   )

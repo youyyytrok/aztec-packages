@@ -18,7 +18,7 @@ export default {
         use: [{ loader: "ts-loader" }],
       },
       {
-        test: /\.msgpack?$/,
+        test: /\.b64?$/,
         use: [{loader: "raw-loader"}]
       }
     ],

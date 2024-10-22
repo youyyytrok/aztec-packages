@@ -1,17 +1,15 @@
 import createDebug from "debug";
 import { ungzip } from "pako";
 import { decode } from "@msgpack/msgpack";
-import acirs from "./assets/acir.msgpack";
-import witnesses from "./assets/witnesses.msgpack";
+import acirs from "./assets/acir.b64";
+import witnesses from "./assets/witnesses.b64";
 
-const readStack = (read: Buffer, numToDrop: number): Uint8Array[] => {
+const readStack = (read: Uint8Array, numToDrop: number): Uint8Array[] => {
   const unpacked = decode(read.subarray(0, read.length - numToDrop)) as Uint8Array[];
-  const decompressed = unpacked
-    .map((arr: Uint8Array)=>(ungzip(arr, { raw: true }))) as Uint8Array[];
+  const decompressed = unpacked.map((arr: Uint8Array) => ungzip(arr));
   console.log(`stack read!`);
   return decompressed;
 };
-
 
 createDebug.enable("*");
 const debug = createDebug("browser-test-app");
@@ -25,7 +23,6 @@ async function runTest(
   const { AztecClientBackend } = await import("@aztec/bb.js");
 
   console.log("starting test...");
-  console.log(`input lengths after reading to Uint8Array's: ${acirs.length} and ${witnesses.length}`)
   const backend = new AztecClientBackend(acirs, { threads });
   const proof = await backend.generateProof(witnesses);
   console.log("generated proof");
@@ -53,6 +50,12 @@ function base64ToUint8Array(base64: string) {
 document.addEventListener("DOMContentLoaded", function () {
   const button = document.createElement("button");
   button.innerText = "Run Test";
-  button.addEventListener("click", () => runTest(readStack(acirs as unknown as Buffer, 0) , readStack(witnesses as unknown as Buffer, 1)));
+  console.log("running test");
+  button.addEventListener("click", () =>
+    runTest(
+      readStack(base64ToUint8Array(acirs), 1),
+      readStack(base64ToUint8Array(witnesses), 0)
+    )
+  );
   document.body.appendChild(button);
 });

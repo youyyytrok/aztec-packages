@@ -194,16 +194,14 @@ export class AztecClientBackend {
     if (!this.api) {
       const api = await Barretenberg.new(this.options);
       console.log("created new api")
-      await api.initSRSForCircuitSize(1<<19); // WORKTODO
+      await api.initSRSForCircuitSize(1<<21); // WORKTODO
       console.log("inited SRS");
       this.api = api;
     }
   }
 
   async generateProof(witnessMsgpack: Uint8Array[]): Promise<Uint8Array> {
-    console.log("entered generateProof");
     await this.instantiate();
-    console.log("tried to instantiate");
     return this.api.acirProveAztecClient(this.acirMsgpack, witnessMsgpack);
   }
 
