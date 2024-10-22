@@ -223,6 +223,7 @@ WASM_EXPORT void acir_prove_aztec_client(uint8_t const* acir_stack, uint8_t cons
 
         folding_stack.push_back(Program{ constraints, witness });
     }
+    info("created folding stack");
     // TODO(#7371) dedupe this with the rest of the similar code
     // TODO(https://github.com/AztecProtocol/barretenberg/issues/1101): remove use of auto_verify_mode
     ClientIVC ivc;
