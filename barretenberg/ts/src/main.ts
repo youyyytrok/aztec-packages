@@ -4,7 +4,9 @@ import { GrumpkinCrs } from './crs/node/index.js';
 import createDebug from 'debug';
 import { readFileSync, writeFileSync } from 'fs';
 import { gunzipSync } from 'zlib';
+import { ungzip } from 'pako';
 import { Command } from 'commander';
+import { decode } from '@msgpack/msgpack';
 import { Timer, writeBenchmark } from './benchmark/index.js';
 import path from 'path';
 createDebug.log = console.error.bind(console);
@@ -30,6 +32,13 @@ function getBytecode(bytecodePath: string) {
 
   const encodedCircuit = readFileSync(bytecodePath);
   const decompressed = gunzipSync(encodedCircuit);
+  return decompressed;
+}
+
+function readStack(bytecodePath: string, numToDrop: number) {
+  const encodedCircuit = readFileSync(bytecodePath);
+  const unpacked = decode(encodedCircuit.subarray(0, encodedCircuit.length - numToDrop)) as Uint8Array[];
+  const decompressed = unpacked.map((arr: Uint8Array) => gunzipSync(arr));
   return decompressed;
 }
 
@@ -187,6 +196,25 @@ export async function proveAndVerifyMegaHonk(bytecodePath: string, witnessPath: 
 
     const verified = await api.acirProveAndVerifyMegaHonk(bytecode, witness);
     return verified;
+  } finally {
+    await api.destroy();
+  }
+  /* eslint-enable camelcase */
+}
+
+export async function proveAndVerifyClientIvc(bytecodePath: string, witnessPath: string, crsPath: string) {
+  /* eslint-disable camelcase */
+  const { api } = await initClientIVC(bytecodePath, crsPath);
+  try {
+    console.log(`bytecode path is ${bytecodePath}`);
+    console.log(`witness path is ${witnessPath}`);
+    const bytecode = readStack(bytecodePath, 1);
+    const witness = readStack(witnessPath, 0);
+
+    console.log("read stacks!");
+
+    const result = await api.acirProveAndVerifyClientIvc(bytecode, witness);
+    return false;
   } finally {
     await api.destroy();
   }
@@ -504,6 +532,17 @@ program
   .action(async ({ bytecodePath, witnessPath, crsPath }) => {
     handleGlobalOptions();
     const result = await proveAndVerifyMegaHonk(bytecodePath, witnessPath, crsPath);
+    process.exit(result ? 0 : 1);
+  });
+
+program
+  .command('client_ivc_prove_output_all')
+  .description('Generate a ClientIVC proof.')
+  .option('-b, --bytecode-path <path>', 'Specify the bytecode path', './target/acirs.msgpack')
+  .option('-w, --witness-path <path>', 'Specify the witness path', './target/witnesses.msgpack')
+  .action(async ({ bytecodePath, witnessPath, crsPath }) => {
+    handleGlobalOptions();
+    const result = await proveAndVerifyClientIvc(bytecodePath, witnessPath, crsPath);
     process.exit(result ? 0 : 1);
   });
 

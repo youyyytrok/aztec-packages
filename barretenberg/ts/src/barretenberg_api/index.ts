@@ -432,6 +432,20 @@ export class BarretenbergApi {
     return out[0];
   }
 
+  async acirProveAndVerifyClientIvc(constraintSystemBuf: Uint8Array[], witnessBuf: Uint8Array[]): Promise<boolean> {
+    const inArgs = [constraintSystemBuf, witnessBuf].map(serializeBufferable);
+    console.log("serialized unpacked and unzipped circuit and witness data");
+    const outTypes: OutputType[] = [BoolDeserializer()];
+    console.log("about to call cbind");
+    const result = await this.wasm.callWasmExport(
+      'acir_prove_aztec_client',
+      inArgs,
+      outTypes.map(t => t.SIZE_IN_BYTES),
+    );
+    const out = result.map((r, i) => outTypes[i].fromBuffer(r));
+    return out[0];
+  }
+
   async acirLoadVerificationKey(acirComposerPtr: Ptr, vkBuf: Uint8Array): Promise<void> {
     const inArgs = [acirComposerPtr, vkBuf].map(serializeBufferable);
     const outTypes: OutputType[] = [];

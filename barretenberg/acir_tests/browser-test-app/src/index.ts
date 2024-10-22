@@ -1,16 +1,13 @@
 import createDebug from "debug";
-import { inflate } from "pako";
-import { readFileSync } from "fs";
+import { ungzip } from "pako";
 import { decode } from "@msgpack/msgpack";
-import { gunzipSync } from 'zlib';
 import acirs from "./assets/acir.msgpack";
 import witnesses from "./assets/witnesses.msgpack";
 
 const readStack = (read: Buffer, numToDrop: number): Uint8Array[] => {
-  const unpacked = decode(read.subarray(0, read.length - numToDrop));
+  const unpacked = decode(read.subarray(0, read.length - numToDrop)) as Uint8Array[];
   const decompressed = unpacked
-    .map(gunzipSync)
-    .map((buffer: Buffer) => new Uint8Array(buffer));
+    .map((arr: Uint8Array)=>(ungzip(arr, { raw: true }))) as Uint8Array[];
   console.log(`stack read!`);
   return decompressed;
 };

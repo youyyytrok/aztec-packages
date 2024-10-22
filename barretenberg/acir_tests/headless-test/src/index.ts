@@ -1,7 +1,7 @@
 import { chromium, firefox, webkit } from "playwright";
 import fs from "fs";
 import { Command } from "commander";
-import { gunzipSync } from "zlib";
+import { ungzip } from "pako";
 import { decode } from "@msgpack/msgpack";
 import chalk from "chalk";
 import os from "os";
@@ -40,10 +40,11 @@ function formatAndPrintLog(message: string): void {
 
 const readStack = (path: string, numToDrop: number): Uint8Array[] => {
   const read = fs.readFileSync(path);
-  const unpacked = decode(read.subarray(0, read.length - numToDrop));
+  console.log("read file");
+  const unpacked = decode(read.subarray(0, read.length - numToDrop)) as Uint8Array[];
+  console.log("unpacked file");
   const decompressed = unpacked
-    .map(gunzipSync)
-    .map((buffer: Buffer) => new Uint8Array(buffer));
+  .map((arr: Uint8Array)=>(ungzip(arr))) as Uint8Array[]
   console.log(`stack read!`);
   return decompressed;
 };
@@ -53,7 +54,7 @@ program.option("-v, --verbose", "verbose logging");
 program.option("-c, --crs-path <path>", "ignored (here for compatibility)");
 
 program
-  .command("prove_and_verify")
+  .command("client_ivc_prove_output_all")
   .description(
     "Generate a proof and verify it. Process exits with success or failure code."
   )
@@ -68,7 +69,9 @@ program
     "./target/witnesses.msgpack"
   )
   .action(async ({ bytecodePath, witnessPath, recursive }) => {
+    console.log("about to read witness stack");
     const witness = readStack(witnessPath, 0);
+    console.log("about to read acir stack");
     const acir = readStack(bytecodePath, 1);
     const threads = Math.min(os.cpus().length, 16);
 
