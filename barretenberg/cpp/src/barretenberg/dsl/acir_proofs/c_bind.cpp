@@ -210,13 +210,10 @@ WASM_EXPORT void acir_serialize_verification_key_into_fields(in_ptr acir_compose
 WASM_EXPORT void acir_prove_aztec_client(uint8_t const* acir_stack, uint8_t const* witness_stack, bool* result)
 {
     using Program = acir_format::AcirProgram;
-    info("about to read witnesses from buffer");
     std::vector<std::vector<uint8_t>> witnesses = from_buffer<std::vector<std::vector<uint8_t>>>(witness_stack);
     info("read witnesses from buffer");
     std::vector<std::vector<uint8_t>> acirs = from_buffer<std::vector<std::vector<uint8_t>>>(acir_stack);
     info("read acirs from buffer");
-    info(witnesses.size());
-    info(acirs.size());
     std::vector<Program> folding_stack;
 
     for (auto [bincode, wit] : zip_view(acirs, witnesses)) {
@@ -246,9 +243,11 @@ WASM_EXPORT void acir_prove_aztec_client(uint8_t const* acir_stack, uint8_t cons
             circuit.databus_propagation_data.is_kernel = is_kernel;
         }
         is_kernel = !is_kernel;
+        info("calling ivc.accumulate:");
         ivc.accumulate(circuit);
     }
 
+    info("calling ivc.prove");
     auto proof = ivc.prove();
     *result = false;
 }

@@ -234,15 +234,13 @@ class GoblinProver {
 
         goblin_proof.merge_proof = merge_proof_in.empty() ? std::move(merge_proof) : std::move(merge_proof_in);
         {
-
             PROFILE_THIS_NAME("prove_eccvm");
-
+            info("prove eccvm:");
             prove_eccvm();
         }
         {
-
             PROFILE_THIS_NAME("prove_translator");
-
+            info("prove translator:");
             prove_translator();
         }
         return goblin_proof;

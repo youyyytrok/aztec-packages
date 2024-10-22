@@ -38,7 +38,7 @@ function getBytecode(bytecodePath: string) {
 function readStack(bytecodePath: string, numToDrop: number) {
   const encodedCircuit = readFileSync(bytecodePath);
   const unpacked = decode(encodedCircuit.subarray(0, encodedCircuit.length - numToDrop)) as Uint8Array[];
-  const decompressed = unpacked.map((arr: Uint8Array) => gunzipSync(arr));
+  const decompressed = unpacked.map((arr: Uint8Array) => ungzip(arr));
   return decompressed;
 }
 
@@ -119,8 +119,8 @@ async function initClientIVC(bytecodePath: string, crsPath: string) {
   // TODO(https://github.com/AztecProtocol/barretenberg/issues/1097): tighter bound needed
   // currently using 1.6x points in CRS because of structured polys, see notes for how to minimize
   // Plus 1 needed! (Move +1 into Crs?)
-  const crs = await Crs.new(2 ** 19 + 1, crsPath);
-  const grumpkinCrs = await GrumpkinCrs.new(2 ** 14 + 1, crsPath);
+  const crs = await Crs.new(2 ** 21 + 1, crsPath);
+  const grumpkinCrs = await GrumpkinCrs.new(2 ** 16 + 1, crsPath);
 
   // Load CRS into wasm global CRS state.
   // TODO: Make RawBuffer be default behavior, and have a specific Vector type for when wanting length prefixed.
@@ -206,12 +206,8 @@ export async function proveAndVerifyClientIvc(bytecodePath: string, witnessPath:
   /* eslint-disable camelcase */
   const { api } = await initClientIVC(bytecodePath, crsPath);
   try {
-    console.log(`bytecode path is ${bytecodePath}`);
-    console.log(`witness path is ${witnessPath}`);
     const bytecode = readStack(bytecodePath, 1);
     const witness = readStack(witnessPath, 0);
-
-    console.log("read stacks!");
 
     const result = await api.acirProveAndVerifyClientIvc(bytecode, witness);
     return false;

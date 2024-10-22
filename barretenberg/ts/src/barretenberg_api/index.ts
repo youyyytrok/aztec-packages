@@ -434,9 +434,8 @@ export class BarretenbergApi {
 
   async acirProveAndVerifyClientIvc(constraintSystemBuf: Uint8Array[], witnessBuf: Uint8Array[]): Promise<boolean> {
     const inArgs = [constraintSystemBuf, witnessBuf].map(serializeBufferable);
-    console.log("serialized unpacked and unzipped circuit and witness data");
+    console.log("serialized the unpacked unpacked and unzipped circuit and witness data");
     const outTypes: OutputType[] = [BoolDeserializer()];
-    console.log("about to call cbind");
     const result = await this.wasm.callWasmExport(
       'acir_prove_aztec_client',
       inArgs,

@@ -52,7 +52,7 @@ export function uint8ArrayToHexString(uint8Array: Uint8Array) {
 
 // For serializing a buffer as a vector.
 export function serializeBufferToVector(buf: Uint8Array) {
-  console.log(`serializing length: ${numToInt32BE(buf.length)}`);
+  console.log(`serializing length: ${buf.length} bytes`);
   return concatenateUint8Arrays([numToInt32BE(buf.length), buf]);
 }
 

@@ -259,6 +259,7 @@ bool ClientIVC::verify(const Proof& proof, const std::vector<std::shared_ptr<Dec
  */
 HonkProof ClientIVC::decider_prove() const
 {
+    info("prove decider");
     MegaDeciderProver decider_prover(fold_output.accumulator);
     return decider_prover.construct_proof();
 }
