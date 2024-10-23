@@ -554,9 +554,7 @@ export class BarretenbergApi {
       inArgs,
       outTypes.map(t => t.SIZE_IN_BYTES),
     );
-    console.log("wasm export called");
     const out = result.map((r, i) => outTypes[i].fromBuffer(r));
-    console.log("out created");
     return out[0];
   }
 

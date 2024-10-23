@@ -193,9 +193,7 @@ export class AztecClientBackend {
   async instantiate(): Promise<void> {
     if (!this.api) {
       const api = await Barretenberg.new(this.options);
-      console.log("created new api")
-      await api.initSRSForCircuitSize(1<<21); // WORKTODO
-      console.log("inited SRS");
+      await api.initSRSClientIVC();
       this.api = api;
     }
   }

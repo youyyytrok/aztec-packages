@@ -38,8 +38,18 @@ function formatAndPrintLog(message: string): void {
   console.log(formattedMessage);
 }
 
+function base64ToUint8Array(base64: string) {
+  let binaryString = atob(base64);
+  let len = binaryString.length;
+  let bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
 function readStack(bytecodePath: string, numToDrop: number) {
-  const encodedCircuit = fs.readFileSync(bytecodePath);
+  const encodedCircuit = base64ToUint8Array(fs.readFileSync(bytecodePath, 'utf8'));
   const unpacked = decode(encodedCircuit.subarray(0, encodedCircuit.length - numToDrop)) as Uint8Array[];
   const decompressed = unpacked.map((arr: Uint8Array) => ungzip(arr));
   return decompressed;
@@ -62,13 +72,11 @@ program
   .option(
     "-w, --witness-path <path>",
     "Specify the path to the gzip encoded ACIR witness",
-    "./target/witnesses.msgpack"
+    "./target/witnesses.b64"
   )
   .action(async ({ bytecodePath, witnessPath, recursive }) => {
-    console.log("about to read witness stack");
-    const witness = readStack(witnessPath, 0);
-    console.log("about to read acir stack");
     const acir = readStack(bytecodePath, 1);
+    const witness = readStack(witnessPath, 0);
     const threads = Math.min(os.cpus().length, 16);
 
     const browsers = { chrome: chromium, firefox: firefox, webkit: webkit };
@@ -84,6 +92,7 @@ program
       const page = await context.newPage();
 
       if (program.opts().verbose) {
+        console.log("verbose is turned on!");
         page.on("console", (msg) => formatAndPrintLog(msg.text()));
       }
 

@@ -1,4 +1,4 @@
-export { Crs } from './crs/index.js';
+export { Crs, GrumpkinCrs } from './crs/index.js';
 export {
   BackendOptions,
   Barretenberg,

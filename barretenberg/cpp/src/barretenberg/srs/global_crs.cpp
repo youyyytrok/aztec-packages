@@ -21,6 +21,7 @@ void init_crs_factory(std::vector<g1::affine_element> const& points, g2::affine_
 // Initializes crs from a file path this we use in the entire codebase
 void init_crs_factory(std::string crs_path)
 {
+    info("CRS FACTORY INITIALIZED");
     if (crs_factory != nullptr) {
         return;
     }

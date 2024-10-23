@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-import { Crs, Barretenberg, RawBuffer } from './index.js';
-import { GrumpkinCrs } from './crs/node/index.js';
+import { Crs, GrumpkinCrs, Barretenberg, RawBuffer } from './index.js';
 import createDebug from 'debug';
 import { readFileSync, writeFileSync } from 'fs';
 import { gunzipSync } from 'zlib';
@@ -112,10 +111,10 @@ async function initUltraHonk(bytecodePath: string, crsPath: string) {
   return { api, circuitSize, dyadicCircuitSize };
 }
 
-async function initClientIVC(bytecodePath: string, crsPath: string) {
+async function initClientIVC(crsPath: string) {
   const api = await Barretenberg.new({ threads });
 
-  debug('loading BN254 and Grumpkin crs...');
+  console.log('loading BN254 and Grumpkin crs...');
   // TODO(https://github.com/AztecProtocol/barretenberg/issues/1097): tighter bound needed
   // currently using 1.6x points in CRS because of structured polys, see notes for how to minimize
   // Plus 1 needed! (Move +1 into Crs?)
@@ -204,7 +203,7 @@ export async function proveAndVerifyMegaHonk(bytecodePath: string, witnessPath: 
 
 export async function proveAndVerifyClientIvc(bytecodePath: string, witnessPath: string, crsPath: string) {
   /* eslint-disable camelcase */
-  const { api } = await initClientIVC(bytecodePath, crsPath);
+  const { api } = await initClientIVC(crsPath);
   try {
     const bytecode = readStack(bytecodePath, 1);
     const witness = readStack(witnessPath, 0);
@@ -219,7 +218,7 @@ export async function proveAndVerifyClientIvc(bytecodePath: string, witnessPath:
 
 export async function foldAndVerifyProgram(bytecodePath: string, witnessPath: string, crsPath: string) {
   /* eslint-disable camelcase */
-  const { api } = await initClientIVC(bytecodePath, crsPath);
+  const { api } = await initClientIVC(crsPath);
   try {
     const bytecode = getBytecode(bytecodePath);
     const witness = getWitness(witnessPath);

@@ -7,7 +7,6 @@ import witnesses from "./assets/witnesses.b64";
 const readStack = (read: Uint8Array, numToDrop: number): Uint8Array[] => {
   const unpacked = decode(read.subarray(0, read.length - numToDrop)) as Uint8Array[];
   const decompressed = unpacked.map((arr: Uint8Array) => ungzip(arr));
-  console.log(`stack read!`);
   return decompressed;
 };
 
@@ -19,13 +18,12 @@ async function runTest(
   witnesses: Uint8Array[],
   threads?: number
 ) {
-  console.log("about to 'import' backend type...");
   const { AztecClientBackend } = await import("@aztec/bb.js");
 
-  console.log("starting test...");
+  debug("starting test...");
   const backend = new AztecClientBackend(acirs, { threads });
   const proof = await backend.generateProof(witnesses);
-  console.log("generated proof");
+  debug("generated proof");
 
   await backend.destroy();
 
@@ -35,10 +33,8 @@ async function runTest(
 (window as any).runTest = runTest;
 
 function base64ToUint8Array(base64: string) {
-  console.log(`input string length ${base64.length}`);
   let binaryString = atob(base64);
   let len = binaryString.length;
-  console.log(`binary string length ${len}`);
   let bytes = new Uint8Array(len);
   for (let i = 0; i < len; i++) {
     bytes[i] = binaryString.charCodeAt(i);
@@ -50,7 +46,6 @@ function base64ToUint8Array(base64: string) {
 document.addEventListener("DOMContentLoaded", function () {
   const button = document.createElement("button");
   button.innerText = "Run Test";
-  console.log("running test");
   button.addEventListener("click", () =>
     runTest(
       readStack(base64ToUint8Array(acirs), 1),

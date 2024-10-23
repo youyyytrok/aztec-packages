@@ -17,7 +17,7 @@ FLOW=${FLOW:-prove_and_verify}
 HONK=${HONK:-false}
 CRS_PATH=~/.bb-crs
 BRANCH=master
-VERBOSE=${VERBOSE:-}
+VERBOSE=${VERBOSE:+-v}
 TEST_NAMES=("$@")
 # We get little performance benefit over 16 cores (in fact it can be worse).
 HARDWARE_CONCURRENCY=${HARDWARE_CONCURRENCY:-16}
