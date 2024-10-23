@@ -1150,21 +1150,6 @@ export class BarretenbergApiSync {
     return out[0];
   }
 
-  acirProveAztecClient(acirVec: Uint8Array, witnessVec: Uint8Array): Uint8Array {
-    console.log("~~~SYNC VERSION~~~");
-    const inArgs = [acirVec, witnessVec].map(serializeBufferable);
-    const outTypes: OutputType[] = [BufferDeserializer()];
-    const result = this.wasm.callWasmExport(
-      'acir_prove_aztec_client',
-      inArgs,
-      outTypes.map(t => t.SIZE_IN_BYTES),
-    );
-    console.log("wasm export called");
-    const out = result.map((r, i) => outTypes[i].fromBuffer(r));
-    console.log("out created");
-    return out[0];
-  }
-
   acirVerifyUltraHonk(proofBuf: Uint8Array, vkBuf: Uint8Array): boolean {
     const inArgs = [proofBuf, vkBuf].map(serializeBufferable);
     const outTypes: OutputType[] = [BoolDeserializer()];
