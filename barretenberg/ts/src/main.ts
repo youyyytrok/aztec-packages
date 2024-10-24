@@ -201,15 +201,39 @@ export async function proveAndVerifyMegaHonk(bytecodePath: string, witnessPath: 
   /* eslint-enable camelcase */
 }
 
-export async function proveAndVerifyClientIvc(bytecodePath: string, witnessPath: string, crsPath: string) {
+export async function proveAndVerifyAztecClient(bytecodePath: string, witnessPath: string, crsPath: string) {
   /* eslint-disable camelcase */
   const { api } = await initClientIVC(crsPath);
   try {
-    const bytecode = readStack(bytecodePath, 1);
+    const bytecode = readStack(bytecodePath, 0);
     const witness = readStack(witnessPath, 0);
 
-    const result = await api.acirProveAndVerifyClientIvc(bytecode, witness);
-    return false;
+    const verified = await api.acirProveAndVerifyAztecClient(bytecode, witness);
+    return verified;
+  } finally {
+    await api.destroy();
+  }
+  /* eslint-enable camelcase */
+}
+
+export async function proveAztecClient(bytecodePath: string, witnessPath: string, crsPath: string, outputPath: string) {
+  /* eslint-disable camelcase */
+  const { api } = await initClientIVC(crsPath);
+  try {
+    debug(`creating proof...`);
+    const bytecode = readStack(bytecodePath, 0);
+    const witness = readStack(witnessPath, 0);
+    const proof = await api.acirProveAztecClient(bytecode, witness);
+    debug(`finished creating proof.`);
+
+    if (outputPath === '-') {
+      process.stdout.write(proof);
+      debug(`proof written to stdout`);
+    } else {
+      writeFileSync(outputPath, proof);
+      debug(`proof written to: ${outputPath}`);
+    }
+
   } finally {
     await api.destroy();
   }
@@ -531,13 +555,13 @@ program
   });
 
 program
-  .command('client_ivc_prove_output_all')
+  .command('client_ivc_prove_and_verify')
   .description('Generate a ClientIVC proof.')
   .option('-b, --bytecode-path <path>', 'Specify the bytecode path', './target/acirs.msgpack')
   .option('-w, --witness-path <path>', 'Specify the witness path', './target/witnesses.msgpack')
   .action(async ({ bytecodePath, witnessPath, crsPath }) => {
     handleGlobalOptions();
-    const result = await proveAndVerifyClientIvc(bytecodePath, witnessPath, crsPath);
+    const result = await proveAndVerifyAztecClient(bytecodePath, witnessPath, crsPath);
     process.exit(result ? 0 : 1);
   });
 
@@ -561,6 +585,29 @@ program
   .action(async ({ bytecodePath, witnessPath, outputPath, crsPath }) => {
     handleGlobalOptions();
     await prove(bytecodePath, witnessPath, crsPath, outputPath);
+  });
+
+program
+  .command('client_ivc_prove')
+  .description('Generate a ClientIVC proof.')
+  .option('-b, --bytecode-path <path>', 'Specify the bytecode path', './target/acirs.msgpack')
+  .option('-w, --witness-path <path>', 'Specify the witness path', './target/witnesses.msgpack')
+  .option('-o, --output-path <path>', 'Specify the proof output path', './proofs/proof')
+  .action(async ({ bytecodePath, witnessPath, outputPath, crsPath }) => {
+    handleGlobalOptions();
+    await proveAztecClient(bytecodePath, witnessPath, outputPath, crsPath);
+  });
+
+  program
+  .command('client_ivc_prove_and_verify')
+  .description('Generate a ClientIVC proof.')
+  .option('-b, --bytecode-path <path>', 'Specify the bytecode path', './target/acirs.msgpack')
+  .option('-w, --witness-path <path>', 'Specify the witness path', './target/witnesses.msgpack')
+  .option('-o, --output-path <path>', 'Specify the proof output path', './proofs/proof')
+  .action(async ({ bytecodePath, witnessPath, crsPath }) => {
+    handleGlobalOptions();
+    const result = await proveAndVerifyAztecClient(bytecodePath, witnessPath, crsPath);
+    process.exit(result ? 0 : 1);
   });
 
 program
