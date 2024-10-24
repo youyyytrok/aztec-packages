@@ -189,7 +189,7 @@ void ClientIVC::accumulate(ClientCircuit& circuit, const std::shared_ptr<Verific
         proving_key->gate_challenges = std::vector<FF>(CONST_PG_LOG_N, 0);
 
         fold_output.accumulator = proving_key; // initialize the prover accum with the completed key
-        vinfo("initizlied accumulator");
+        vinfo("initialized accumulator");
 
         // Add oink proof and corresponding verification key to the verification queue
         verification_queue.push_back(
@@ -267,9 +267,10 @@ bool ClientIVC::verify(const Proof& proof, const std::vector<std::shared_ptr<Dec
  */
 HonkProof ClientIVC::decider_prove() const
 {
-    info("prove decider");
+    info("prove decider...");
     MegaDeciderProver decider_prover(fold_output.accumulator);
     return decider_prover.construct_proof();
+    info("finished decider proving.");
 }
 
 /**

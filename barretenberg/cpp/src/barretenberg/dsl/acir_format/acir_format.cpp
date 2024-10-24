@@ -23,7 +23,6 @@ void build_constraints(Builder& builder,
                        bool honk_recursion,
                        bool collect_gates_per_opcode)
 {
-    info("building constraints...");
     if (collect_gates_per_opcode) {
         constraint_system.gates_per_opcode.resize(constraint_system.num_acir_opcodes, 0);
     }
@@ -276,7 +275,6 @@ void build_constraints(Builder& builder,
             builder.add_recursive_proof(current_aggregation_object);
         }
     }
-    info("constraints built!");
 }
 
 void process_plonk_recursion_constraints(Builder& builder,

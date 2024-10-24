@@ -222,7 +222,7 @@ export async function executeBbClientIvcProof(
     const args = ['-o', outputPath, '-b', bytecodeStackPath, '-w', witnessStackPath, '-v'];
     const timer = new Timer();
     const logFunction = (message: string) => {
-      log(`client ivc proof BB out - ${message}`);
+      log(`bb - ${message}`);
     };
 
     const result = await executeBB(pathToBB, 'client_ivc_prove_output_all_msgpack', args, logFunction);
@@ -275,7 +275,7 @@ export async function executeBbClientIvcProveAndVerify(
     const args = ['-b', bytecodeStackPath, '-w', witnessStackPath, '-v'];
     const timer = new Timer();
     const logFunction = (message: string) => {
-      log(`client ivc proof BB out - ${message}`);
+      log(`bb - ${message}`);
     };
 
     const result = await executeBB(pathToBB, 'client_ivc_prove_and_verify', args, logFunction);
