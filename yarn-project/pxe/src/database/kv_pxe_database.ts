@@ -8,6 +8,7 @@ import {
 import {
   AztecAddress,
   CompleteAddress,
+  computePoint,
   type ContractInstanceWithAddress,
   Header,
   SerializableContractInstance,
@@ -197,7 +198,7 @@ export class KVPxeDatabase implements PxeDatabase {
         void this.#notesByContractAndScope.get(scope.toString())!.set(dao.contractAddress.toString(), noteIndex);
         void this.#notesByStorageSlotAndScope.get(scope.toString())!.set(dao.storageSlot.toString(), noteIndex);
         void this.#notesByTxHashAndScope.get(scope.toString())!.set(dao.txHash.toString(), noteIndex);
-        void this.#notesByIvpkMAndScope.get(scope.toString())!.set(dao.ivpkM.toString(), noteIndex);
+        void this.#notesByIvpkMAndScope.get(scope.toString())!.set(dao.addressPoint.toString(), noteIndex);
       }
 
       for (const dao of outgoingNotes) {
@@ -263,7 +264,7 @@ export class KVPxeDatabase implements PxeDatabase {
 
   getIncomingNotes(filter: IncomingNotesFilter): Promise<IncomingNoteDao[]> {
     const publicKey: PublicKey | undefined = filter.owner
-      ? this.#getCompleteAddress(filter.owner)?.publicKeys.masterIncomingViewingPublicKey
+      ? computePoint(filter.owner)
       : undefined;
 
     filter.status = filter.status ?? NoteStatus.ACTIVE;
@@ -334,7 +335,7 @@ export class KVPxeDatabase implements PxeDatabase {
           continue;
         }
 
-        if (publicKey && !note.ivpkM.equals(publicKey)) {
+        if (publicKey && !note.addressPoint.equals(publicKey)) {
           continue;
         }
 
@@ -421,7 +422,7 @@ export class KVPxeDatabase implements PxeDatabase {
         }
 
         const note = IncomingNoteDao.fromBuffer(noteBuffer);
-        if (!note.ivpkM.equals(accountIvpkM)) {
+        if (!note.addressPoint.equals(accountIvpkM)) {
           // tried to nullify someone else's note
           continue;
         }
@@ -441,7 +442,7 @@ export class KVPxeDatabase implements PxeDatabase {
         void this.#nullifiedNotesByContract.set(note.contractAddress.toString(), noteIndex);
         void this.#nullifiedNotesByStorageSlot.set(note.storageSlot.toString(), noteIndex);
         void this.#nullifiedNotesByTxHash.set(note.txHash.toString(), noteIndex);
-        void this.#nullifiedNotesByIvpkM.set(note.ivpkM.toString(), noteIndex);
+        void this.#nullifiedNotesByIvpkM.set(note.addressPoint.toString(), noteIndex);
 
         void this.#nullifierToNoteId.delete(nullifier.toString());
       }
@@ -457,7 +458,7 @@ export class KVPxeDatabase implements PxeDatabase {
     await this.#nullifiedNotesByContract.set(note.contractAddress.toString(), noteIndex);
     await this.#nullifiedNotesByStorageSlot.set(note.storageSlot.toString(), noteIndex);
     await this.#nullifiedNotesByTxHash.set(note.txHash.toString(), noteIndex);
-    await this.#nullifiedNotesByIvpkM.set(note.ivpkM.toString(), noteIndex);
+    await this.#nullifiedNotesByIvpkM.set(note.addressPoint.toString(), noteIndex);
 
     return Promise.resolve();
   }

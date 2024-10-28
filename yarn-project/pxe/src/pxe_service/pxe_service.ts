@@ -44,6 +44,7 @@ import {
   computeAddressSecret,
   computeContractAddressFromInstance,
   computeContractClassId,
+  computePoint,
   getContractClassFromArtifact,
 } from '@aztec/circuits.js';
 import { computeNoteHashNonce, siloNullifier } from '@aztec/circuits.js/hash';
@@ -124,14 +125,13 @@ export class PXEService implements PXE {
 
   private async restoreNoteProcessors() {
     const accounts = await this.keyStore.getAccounts();
-    const publicKeys = accounts.map(async account => await this.keyStore.getMasterIncomingViewingPublicKey(account));
-    const publicKeysSet = new Set(publicKeys.map(k => k.toString()));
+    const accountsSet = new Set(accounts.map(k => k.toString()));
 
     const registeredAddresses = await this.db.getCompleteAddresses();
 
     let count = 0;
     for (const address of registeredAddresses) {
-      if (!publicKeysSet.has(address.publicKeys.masterIncomingViewingPublicKey.toString())) {
+      if (!accountsSet.has(address.address.toString())) {
         continue;
       }
 
@@ -307,10 +307,10 @@ export class PXEService implements PXE {
       let owner = filter.owner;
       if (owner === undefined) {
         const completeAddresses = (await this.db.getCompleteAddresses()).find(address =>
-          address.publicKeys.masterIncomingViewingPublicKey.equals(dao.ivpkM),
+          computePoint(address.address).equals(dao.addressPoint),
         );
         if (completeAddresses === undefined) {
-          throw new Error(`Cannot find complete address for IvpkM ${dao.ivpkM.toString()}`);
+          throw new Error(`Cannot find complete address for addressPoint ${dao.addressPoint.toString()}`);
         }
         owner = completeAddresses.address;
       }
@@ -405,7 +405,7 @@ export class PXEService implements PXE {
           noteHash,
           siloedNullifier,
           index,
-          owner.publicKeys.masterIncomingViewingPublicKey,
+          computePoint(owner.address),
         ),
         scope,
       );
@@ -413,10 +413,10 @@ export class PXEService implements PXE {
   }
 
   public async addNullifiedNote(note: ExtendedNote) {
-    const owner = await this.db.getCompleteAddress(note.owner);
-    if (!owner) {
-      throw new Error(`Unknown account: ${note.owner.toString()}`);
-    }
+    // const owner = await this.db.getCompleteAddress(note.owner);
+    // if (!owner) {
+    //   throw new Error(`Unknown account: ${note.owner.toString()}`);
+    // }
 
     const nonces = await this.#getNoteNonces(note);
     if (nonces.length === 0) {
@@ -453,7 +453,7 @@ export class PXEService implements PXE {
           noteHash,
           Fr.ZERO, // We are not able to derive
           index,
-          owner.publicKeys.masterIncomingViewingPublicKey,
+          computePoint(note.owner),
         ),
       );
     }
