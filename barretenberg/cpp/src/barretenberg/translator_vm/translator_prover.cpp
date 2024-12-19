@@ -8,17 +8,18 @@
 
 namespace bb {
 
-TranslatorProver::TranslatorProver(CircuitBuilder& circuit_builder, const std::shared_ptr<Transcript>& transcript)
+TranslatorProver::TranslatorProver(CircuitBuilder& circuit_builder,
+                                   const std::shared_ptr<Transcript>& transcript,
+                                   std::shared_ptr<CommitmentKey> commitment_key)
     : dyadic_circuit_size(Flavor::compute_dyadic_circuit_size(circuit_builder))
     , mini_circuit_dyadic_size(Flavor::compute_mini_circuit_dyadic_size(circuit_builder))
     , transcript(transcript)
+    , key(std::make_shared<ProvingKey>(circuit_builder))
 {
     PROFILE_THIS();
 
-    // Compute total number of gates, dyadic circuit size, etc.
-    key = std::make_shared<ProvingKey>(circuit_builder);
+    key->commitment_key = commitment_key ? commitment_key : std::make_shared<CommitmentKey>(key->circuit_size);
     compute_witness(circuit_builder);
-    compute_commitment_key(key->circuit_size);
 }
 
 /**
@@ -33,7 +34,9 @@ void TranslatorProver::compute_witness(CircuitBuilder& circuit_builder)
 
     // Populate the wire polynomials from the wire vectors in the circuit constructor. Note: In goblin translator wires
     // come as is, since they have to reflect the structure of polynomials in the first 4 wires, which we've commited to
-    for (auto [wire_poly, wire] : zip_view(key->polynomials.get_wires(), circuit_builder.wires)) {
+    for (auto [wire_poly_, wire_] : zip_view(key->polynomials.get_wires(), circuit_builder.wires)) {
+        auto& wire_poly = wire_poly_;
+        auto& wire = wire_;
         parallel_for_range(circuit_builder.num_gates, [&](size_t start, size_t end) {
             for (size_t i = start; i < end; i++) {
                 if (i >= wire_poly.start_index() && i < wire_poly.end_index()) {
@@ -154,11 +157,15 @@ void TranslatorProver::execute_relation_check_rounds()
 
     auto sumcheck = Sumcheck(key->circuit_size, transcript);
     FF alpha = transcript->template get_challenge<FF>("Sumcheck:alpha");
-    std::vector<FF> gate_challenges(numeric::get_msb(key->circuit_size));
+    std::vector<FF> gate_challenges(CONST_PROOF_SIZE_LOG_N);
     for (size_t idx = 0; idx < gate_challenges.size(); idx++) {
         gate_challenges[idx] = transcript->template get_challenge<FF>("Sumcheck:gate_challenge_" + std::to_string(idx));
     }
-    sumcheck_output = sumcheck.prove(key->polynomials, relation_parameters, alpha, gate_challenges);
+
+    // // create masking polynomials for sumcheck round univariates and auxiliary data
+    zk_sumcheck_data = ZKSumcheckData<Flavor>(key->log_circuit_size, transcript, key->commitment_key);
+
+    sumcheck_output = sumcheck.prove(key->polynomials, relation_parameters, alpha, gate_challenges, zk_sumcheck_data);
 }
 
 /**
@@ -180,8 +187,11 @@ void TranslatorProver::execute_pcs_rounds()
                                        sumcheck_output.challenge,
                                        key->commitment_key,
                                        transcript,
+                                       zk_sumcheck_data.libra_univariates_monomial,
+                                       sumcheck_output.claimed_libra_evaluations,
                                        key->polynomials.get_concatenated(),
                                        key->polynomials.get_groups_to_be_concatenated());
+
     PCS::compute_opening_proof(key->commitment_key, prover_opening_claim, transcript);
 }
 
@@ -212,6 +222,7 @@ HonkProof TranslatorProver::construct_proof()
     // Fiat-Shamir: rho, y, x, z
     // Execute Shplemini PCS
     execute_pcs_rounds();
+    vinfo("computed opening proof");
 
     return export_proof();
 }

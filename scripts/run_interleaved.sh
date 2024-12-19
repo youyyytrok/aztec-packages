@@ -4,7 +4,7 @@ set -eu
 set -o pipefail
 
 # Usage: run_interleaved.sh <main command> <background commands>...
-# Runs the main command with output logging and background commands without logging.
+# Runs commands in parallel, with interleaved output. See ci3/tmux_split for another approach.
 # Finishes when the main command exits.
 
 # Check if at least two commands are provided (otherwise what is the point)
@@ -40,9 +40,11 @@ trap cleanup SIGINT SIGTERM EXIT
 # Function to run a command and prefix the output with color
 function run_command() {
   local cmd="$1"
+  # Take first 3 parts of command to display inline
+  local cmd_prefix=$(echo "$cmd" | awk '{print $1" "$2" "$3}')
   local color="$2"
   $cmd 2>&1 | while IFS= read -r line; do
-    echo -e "${color}[$cmd]\e[0m $line"
+    echo -e "${color}[$cmd_prefix]\e[0m $line"
   done
 }
 

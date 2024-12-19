@@ -1,9 +1,9 @@
 import {
   type ProofAndVerificationKey,
   type ProvingJob,
+  type ProvingJobInputsMap,
   type ProvingJobSource,
-  type ProvingRequest,
-  type ProvingRequestResult,
+  type ProvingRequestResultFor,
   ProvingRequestType,
   type PublicInputsAndRecursiveProof,
   type ServerCircuitProver,
@@ -20,12 +20,11 @@ import type {
   KernelCircuitPublicInputs,
   MergeRollupInputs,
   NESTED_RECURSIVE_PROOF_LENGTH,
+  ParityPublicInputs,
   PrivateBaseRollupInputs,
   PrivateKernelEmptyInputData,
   PublicBaseRollupInputs,
   RECURSIVE_PROOF_LENGTH,
-  RecursiveProof,
-  RootParityInput,
   RootParityInputs,
   RootRollupInputs,
   RootRollupPublicInputs,
@@ -33,16 +32,16 @@ import type {
 } from '@aztec/circuits.js';
 import { randomBytes } from '@aztec/foundation/crypto';
 import { AbortError, TimeoutError } from '@aztec/foundation/error';
-import { createDebugLogger } from '@aztec/foundation/log';
+import { createLogger } from '@aztec/foundation/log';
 import { type PromiseWithResolvers, RunningPromise, promiseWithResolvers } from '@aztec/foundation/promise';
 import { PriorityMemoryQueue } from '@aztec/foundation/queue';
-import { serializeToBuffer } from '@aztec/foundation/serialize';
-import { type TelemetryClient } from '@aztec/telemetry-client';
+import { type TelemetryClient, type Tracer, trackSpan } from '@aztec/telemetry-client';
 
+import { InlineProofStore, type ProofStore } from '../proving_broker/proof_store.js';
 import { ProvingQueueMetrics } from './queue_metrics.js';
 
-type ProvingJobWithResolvers<T extends ProvingRequest = ProvingRequest> = ProvingJob<T> &
-  PromiseWithResolvers<ProvingRequestResult<T['type']>> & {
+type ProvingJobWithResolvers<T extends ProvingRequestType = ProvingRequestType> = ProvingJob &
+  PromiseWithResolvers<ProvingRequestResultFor<T>> & {
     signal?: AbortSignal;
     epochNumber?: number;
     attempts: number;
@@ -58,15 +57,15 @@ const defaultTimeSource = () => Date.now();
  * The queue accumulates jobs and provides them to agents prioritized by block number.
  */
 export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource {
-  private log = createDebugLogger('aztec:prover-client:prover-pool:queue');
+  private log = createLogger('prover-client:prover-pool:queue');
   private queue = new PriorityMemoryQueue<ProvingJobWithResolvers>(
     (a, b) => (a.epochNumber ?? 0) - (b.epochNumber ?? 0),
   );
   private jobsInProgress = new Map<string, ProvingJobWithResolvers>();
-
   private runningPromise: RunningPromise;
-
   private metrics: ProvingQueueMetrics;
+
+  public readonly tracer: Tracer;
 
   constructor(
     client: TelemetryClient,
@@ -76,9 +75,11 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     pollingIntervalMs = 1000,
     private generateId = defaultIdGenerator,
     private timeSource = defaultTimeSource,
+    private proofStore: ProofStore = new InlineProofStore(),
   ) {
+    this.tracer = client.getTracer('MemoryProvingQueue');
     this.metrics = new ProvingQueueMetrics(client, 'MemoryProvingQueue');
-    this.runningPromise = new RunningPromise(this.poll, pollingIntervalMs);
+    this.runningPromise = new RunningPromise(this.poll.bind(this), this.log, pollingIntervalMs);
   }
 
   public start() {
@@ -101,7 +102,7 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     this.log.info('Proving queue stopped');
   }
 
-  public async getProvingJob({ timeoutSec = 1 } = {}): Promise<ProvingJob<ProvingRequest> | undefined> {
+  public async getProvingJob({ timeoutSec = 1 } = {}): Promise<ProvingJob | undefined> {
     if (!this.runningPromise.isRunning()) {
       throw new Error('Proving queue is not running. Start the queue before getting jobs.');
     }
@@ -120,7 +121,9 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
       this.jobsInProgress.set(job.id, job);
       return {
         id: job.id,
-        request: job.request,
+        type: job.type,
+        inputsUri: job.inputsUri,
+        epochNumber: job.epochNumber,
       };
     } catch (err) {
       if (err instanceof TimeoutError) {
@@ -131,7 +134,7 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     }
   }
 
-  resolveProvingJob<T extends ProvingRequestType>(jobId: string, result: ProvingRequestResult<T>): Promise<void> {
+  resolveProvingJob<T extends ProvingRequestType>(jobId: string, result: ProvingRequestResultFor<T>): Promise<void> {
     if (!this.runningPromise.isRunning()) {
       throw new Error('Proving queue is not running.');
     }
@@ -150,7 +153,7 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     return Promise.resolve();
   }
 
-  rejectProvingJob(jobId: string, err: any): Promise<void> {
+  rejectProvingJob(jobId: string, reason: string): Promise<void> {
     if (!this.runningPromise.isRunning()) {
       throw new Error('Proving queue is not running.');
     }
@@ -168,21 +171,19 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     }
 
     // every job should be retried with the exception of the public VM since its in development and can fail
-    if (job.attempts < MAX_RETRIES && job.request.type !== ProvingRequestType.PUBLIC_VM) {
+    if (job.attempts < MAX_RETRIES && job.type !== ProvingRequestType.PUBLIC_VM) {
       job.attempts++;
       this.log.warn(
-        `Job id=${job.id} type=${ProvingRequestType[job.request.type]} failed with error: ${err}. Retry ${
+        `Job id=${job.id} type=${ProvingRequestType[job.type]} failed with error: ${reason}. Retry ${
           job.attempts
         }/${MAX_RETRIES}`,
       );
       this.queue.put(job);
     } else {
       const logFn =
-        job.request.type === ProvingRequestType.PUBLIC_VM && !process.env.AVM_PROVING_STRICT
-          ? this.log.warn
-          : this.log.error;
-      logFn(`Job id=${job.id} type=${ProvingRequestType[job.request.type]} failed with error: ${err}`);
-      job.reject(err);
+        job.type === ProvingRequestType.PUBLIC_VM && !process.env.AVM_PROVING_STRICT ? this.log.warn : this.log.error;
+      logFn(`Job id=${job.id} type=${ProvingRequestType[job.type]} failed with error: ${reason}`);
+      job.reject(new Error(reason));
     }
     return Promise.resolve();
   }
@@ -204,7 +205,8 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     return this.jobsInProgress.has(jobId);
   }
 
-  private poll = () => {
+  @trackSpan('MemoryProvingQueue.poll')
+  private poll() {
     const now = this.timeSource();
     this.metrics.recordQueueSize(this.queue.length());
 
@@ -215,35 +217,39 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
       }
 
       if (job.heartbeat + this.jobTimeoutMs < now) {
-        this.log.warn(`Job ${job.id} type=${ProvingRequestType[job.request.type]} has timed out`);
+        this.log.warn(`Job ${job.id} type=${ProvingRequestType[job.type]} has timed out`);
 
         this.jobsInProgress.delete(job.id);
         job.heartbeat = 0;
         this.queue.put(job);
       }
     }
-  };
+  }
 
-  private enqueue<T extends ProvingRequest>(
-    request: T,
+  private async enqueue<T extends ProvingRequestType>(
+    type: T,
+    inputs: ProvingJobInputsMap[T],
     signal?: AbortSignal,
     epochNumber?: number,
-  ): Promise<ProvingRequestResult<T['type']>> {
+  ): Promise<ProvingRequestResultFor<T>['result']> {
     if (!this.runningPromise.isRunning()) {
       return Promise.reject(new Error('Proving queue is not running.'));
     }
 
-    const { promise, resolve, reject } = promiseWithResolvers<ProvingRequestResult<T['type']>>();
+    const { promise, resolve, reject } = promiseWithResolvers<ProvingRequestResultFor<T>>();
+    const id = this.generateId();
+    const inputsUri = await this.proofStore.saveProofInput(id, type, inputs);
     const item: ProvingJobWithResolvers<T> = {
-      id: this.generateId(),
-      request,
+      id,
+      type,
+      inputsUri,
       signal,
       promise,
       resolve,
       reject,
       attempts: 1,
       heartbeat: 0,
-      epochNumber,
+      epochNumber: epochNumber ?? 0,
     };
 
     if (signal) {
@@ -251,17 +257,14 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     }
 
     this.log.debug(
-      `Adding id=${item.id} type=${ProvingRequestType[request.type]} proving job to queue depth=${this.queue.length()}`,
+      `Adding id=${item.id} type=${ProvingRequestType[type]} proving job to queue depth=${this.queue.length()}`,
     );
-    // TODO (alexg) remove the `any`
-    if (!this.queue.put(item as any)) {
+
+    if (!this.queue.put(item as ProvingJobWithResolvers<any>)) {
       throw new Error();
     }
 
-    const byteSize = serializeToBuffer(item.request.inputs).length;
-    this.metrics.recordNewJob(item.request.type, byteSize);
-
-    return promise;
+    return promise.then(({ result }) => result);
   }
 
   getEmptyPrivateKernelProof(
@@ -269,23 +272,15 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     signal?: AbortSignal,
     epochNumber?: number,
   ): Promise<PublicInputsAndRecursiveProof<KernelCircuitPublicInputs>> {
-    return this.enqueue({ type: ProvingRequestType.PRIVATE_KERNEL_EMPTY, inputs }, signal, epochNumber);
+    return this.enqueue(ProvingRequestType.PRIVATE_KERNEL_EMPTY, inputs, signal, epochNumber);
   }
 
   getTubeProof(
     inputs: TubeInputs,
     signal?: AbortSignal,
     epochNumber?: number,
-  ): Promise<ProofAndVerificationKey<RecursiveProof<typeof RECURSIVE_PROOF_LENGTH>>> {
-    return this.enqueue({ type: ProvingRequestType.TUBE_PROOF, inputs }, signal, epochNumber);
-  }
-
-  getEmptyTubeProof(
-    inputs: PrivateKernelEmptyInputData,
-    signal?: AbortSignal,
-    epochNumber?: number,
-  ): Promise<PublicInputsAndRecursiveProof<KernelCircuitPublicInputs>> {
-    return this.enqueue({ type: ProvingRequestType.PRIVATE_KERNEL_EMPTY, inputs }, signal, epochNumber);
+  ): Promise<ProofAndVerificationKey<typeof RECURSIVE_PROOF_LENGTH>> {
+    return this.enqueue(ProvingRequestType.TUBE_PROOF, inputs, signal, epochNumber);
   }
 
   /**
@@ -296,8 +291,8 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     inputs: BaseParityInputs,
     signal?: AbortSignal,
     epochNumber?: number,
-  ): Promise<RootParityInput<typeof RECURSIVE_PROOF_LENGTH>> {
-    return this.enqueue({ type: ProvingRequestType.BASE_PARITY, inputs }, signal, epochNumber);
+  ): Promise<PublicInputsAndRecursiveProof<ParityPublicInputs, typeof RECURSIVE_PROOF_LENGTH>> {
+    return this.enqueue(ProvingRequestType.BASE_PARITY, inputs, signal, epochNumber);
   }
 
   /**
@@ -308,8 +303,8 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     inputs: RootParityInputs,
     signal?: AbortSignal,
     epochNumber?: number,
-  ): Promise<RootParityInput<typeof NESTED_RECURSIVE_PROOF_LENGTH>> {
-    return this.enqueue({ type: ProvingRequestType.ROOT_PARITY, inputs }, signal, epochNumber);
+  ): Promise<PublicInputsAndRecursiveProof<ParityPublicInputs, typeof NESTED_RECURSIVE_PROOF_LENGTH>> {
+    return this.enqueue(ProvingRequestType.ROOT_PARITY, inputs, signal, epochNumber);
   }
 
   getPrivateBaseRollupProof(
@@ -317,7 +312,7 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     signal?: AbortSignal,
     epochNumber?: number,
   ): Promise<PublicInputsAndRecursiveProof<BaseOrMergeRollupPublicInputs>> {
-    return this.enqueue({ type: ProvingRequestType.PRIVATE_BASE_ROLLUP, inputs }, signal, epochNumber);
+    return this.enqueue(ProvingRequestType.PRIVATE_BASE_ROLLUP, inputs, signal, epochNumber);
   }
 
   getPublicBaseRollupProof(
@@ -325,7 +320,7 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     signal?: AbortSignal,
     epochNumber?: number,
   ): Promise<PublicInputsAndRecursiveProof<BaseOrMergeRollupPublicInputs>> {
-    return this.enqueue({ type: ProvingRequestType.PUBLIC_BASE_ROLLUP, inputs }, signal, epochNumber);
+    return this.enqueue(ProvingRequestType.PUBLIC_BASE_ROLLUP, inputs, signal, epochNumber);
   }
 
   /**
@@ -333,11 +328,11 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
    * @param input - Input to the circuit.
    */
   getMergeRollupProof(
-    input: MergeRollupInputs,
+    inputs: MergeRollupInputs,
     signal?: AbortSignal,
     epochNumber?: number,
   ): Promise<PublicInputsAndRecursiveProof<BaseOrMergeRollupPublicInputs>> {
-    return this.enqueue({ type: ProvingRequestType.MERGE_ROLLUP, inputs: input }, signal, epochNumber);
+    return this.enqueue(ProvingRequestType.MERGE_ROLLUP, inputs, signal, epochNumber);
   }
 
   /**
@@ -345,19 +340,19 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
    * @param input - Input to the circuit.
    */
   getBlockRootRollupProof(
-    input: BlockRootRollupInputs,
+    inputs: BlockRootRollupInputs,
     signal?: AbortSignal,
     epochNumber?: number,
   ): Promise<PublicInputsAndRecursiveProof<BlockRootOrBlockMergePublicInputs>> {
-    return this.enqueue({ type: ProvingRequestType.BLOCK_ROOT_ROLLUP, inputs: input }, signal, epochNumber);
+    return this.enqueue(ProvingRequestType.BLOCK_ROOT_ROLLUP, inputs, signal, epochNumber);
   }
 
   getEmptyBlockRootRollupProof(
-    input: EmptyBlockRootRollupInputs,
+    inputs: EmptyBlockRootRollupInputs,
     signal?: AbortSignal,
     epochNumber?: number,
   ): Promise<PublicInputsAndRecursiveProof<BlockRootOrBlockMergePublicInputs>> {
-    return this.enqueue({ type: ProvingRequestType.EMPTY_BLOCK_ROOT_ROLLUP, inputs: input }, signal, epochNumber);
+    return this.enqueue(ProvingRequestType.EMPTY_BLOCK_ROOT_ROLLUP, inputs, signal, epochNumber);
   }
 
   /**
@@ -365,11 +360,11 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
    * @param input - Input to the circuit.
    */
   getBlockMergeRollupProof(
-    input: BlockMergeRollupInputs,
+    inputs: BlockMergeRollupInputs,
     signal?: AbortSignal,
     epochNumber?: number,
   ): Promise<PublicInputsAndRecursiveProof<BlockRootOrBlockMergePublicInputs>> {
-    return this.enqueue({ type: ProvingRequestType.BLOCK_MERGE_ROLLUP, inputs: input }, signal, epochNumber);
+    return this.enqueue(ProvingRequestType.BLOCK_MERGE_ROLLUP, inputs, signal, epochNumber);
   }
 
   /**
@@ -377,11 +372,11 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
    * @param input - Input to the circuit.
    */
   getRootRollupProof(
-    input: RootRollupInputs,
+    inputs: RootRollupInputs,
     signal?: AbortSignal,
     epochNumber?: number,
   ): Promise<PublicInputsAndRecursiveProof<RootRollupPublicInputs>> {
-    return this.enqueue({ type: ProvingRequestType.ROOT_ROLLUP, inputs: input }, signal, epochNumber);
+    return this.enqueue(ProvingRequestType.ROOT_ROLLUP, inputs, signal, epochNumber);
   }
 
   /**
@@ -391,8 +386,8 @@ export class MemoryProvingQueue implements ServerCircuitProver, ProvingJobSource
     inputs: AvmCircuitInputs,
     signal?: AbortSignal,
     epochNumber?: number,
-  ): Promise<ProofAndVerificationKey<RecursiveProof<typeof AVM_PROOF_LENGTH_IN_FIELDS>>> {
-    return this.enqueue({ type: ProvingRequestType.PUBLIC_VM, inputs }, signal, epochNumber);
+  ): Promise<ProofAndVerificationKey<typeof AVM_PROOF_LENGTH_IN_FIELDS>> {
+    return this.enqueue(ProvingRequestType.PUBLIC_VM, inputs, signal, epochNumber);
   }
 
   /**

@@ -1,6 +1,6 @@
 import { type AztecAddress, type CheatCodes, EthAddress, Fr, type Wallet } from '@aztec/aztec.js';
 import { RollupAbi } from '@aztec/l1-artifacts';
-import { TokenContract } from '@aztec/noir-contracts.js';
+import { TokenContract } from '@aztec/noir-contracts.js/Token';
 
 import {
   type Account,
@@ -180,6 +180,7 @@ describe('e2e_cheat_codes', () => {
       const mintAmount = 100n;
 
       await mintTokensToPrivate(token, wallet, admin, mintAmount);
+      await token.methods.sync_notes().simulate();
 
       const balancesAdminSlot = cc.aztec.computeSlotInMap(TokenContract.storage.balances.slot, admin);
 
